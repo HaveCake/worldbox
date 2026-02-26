@@ -1,0 +1,17 @@
+{
+  "name": "worldbox",
+  "version": "1.0.0",
+  "description": "上帝模拟器 (God Simulator) - 极简文字游戏 MVP 后端",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/server.test.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

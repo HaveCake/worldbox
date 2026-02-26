@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>上帝模拟器 — God Simulator</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--surface:#161b22;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--accent:#58a6ff;--green:#3fb950;--red:#f85149;--yellow:#d29922;--font-mono:'SF Mono','Cascadia Code','Fira Code','Consolas',monospace}
+html,body{height:100%;font-family:var(--font-mono);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+#app{display:flex;flex-direction:column;min-height:100vh;padding:16px;gap:16px;max-width:1200px;margin:0 auto}
+h1{font-size:20px;font-weight:600;color:var(--accent);text-align:center;letter-spacing:2px}
+h1 span{color:var(--muted);font-weight:400;font-size:13px}
+
+/* ── Config ── */
+.config{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.config label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);flex:1 1 180px}
+.config label.small{flex:0 0 120px}
+.config input{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:6px 10px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;transition:border-color .2s}
+.config input:focus{border-color:var(--accent)}
+
+/* ── Status Grid ── */
+.section-title{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;padding-top:8px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;transition:transform .15s,box-shadow .3s,background .4s}
+.card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.card .key{font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.card .value{font-size:26px;font-weight:700;color:var(--text)}
+.card.flash-up{animation:flashUp .6s ease}
+.card.flash-down{animation:flashDown .6s ease}
+.card.flash-new{animation:flashNew .8s ease}
+@keyframes flashUp{0%{background:rgba(63,185,80,.35)}100%{background:var(--surface)}}
+@keyframes flashDown{0%{background:rgba(248,81,73,.35)}100%{background:var(--surface)}}
+@keyframes flashNew{0%{background:rgba(210,153,34,.5);transform:scale(1.05)}100%{background:var(--surface);transform:scale(1)}}
+
+/* ── Debug Log ── */
+.debug{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px;flex:0 0 auto}
+.debug pre{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:12px;max-height:200px;overflow-y:auto;font-size:12px;color:var(--green);white-space:pre-wrap;word-break:break-all}
+
+/* ── Controls ── */
+.controls{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.controls .countdown{font-size:13px;color:var(--muted);min-width:200px}
+.controls .countdown strong{color:var(--yellow);font-size:16px}
+.controls button{background:var(--accent);color:#fff;border:none;border-radius:4px;padding:7px 16px;font-family:var(--font-mono);font-size:13px;cursor:pointer;transition:opacity .2s}
+.controls button:hover{opacity:.85}
+.controls button.pause{background:var(--yellow);color:var(--bg)}
+.controls button.danger{background:var(--red)}
+.controls input[type="text"]{flex:1;min-width:200px;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:6px 10px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none}
+.controls input[type="text"]:focus{border-color:var(--accent)}
+
+.status-bar{font-size:12px;color:var(--muted);text-align:center}
+.status-bar.error{color:var(--red)}
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>🌍 上帝模拟器 <span>God Simulator MVP</span></h1>
+
+  <!-- Config -->
+  <div class="config">
+    <label>API Base URL
+      <input id="cfgUrl" type="text" placeholder="https://api.openai.com">
+    </label>
+    <label>API Key
+      <input id="cfgKey" type="password" placeholder="sk-...">
+    </label>
+    <label>Model
+      <input id="cfgModel" type="text" placeholder="gpt-4o">
+    </label>
+    <label class="small">Tick 间隔（秒）
+      <input id="cfgTick" type="number" min="1" value="10">
+    </label>
+  </div>
+
+  <!-- State Grid -->
+  <div class="section-title">📊 世界状态监控</div>
+  <div class="grid" id="stateGrid"></div>
+
+  <!-- Debug Log -->
+  <div class="debug">
+    <div class="section-title">🖥 Raw JSON 监控日志</div>
+    <pre id="debugLog">等待第一次数据…</pre>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="countdown">距离下次刷新还剩 <strong id="cdDisplay">-</strong> 秒</div>
+    <button id="btnPause" class="pause">⏸ 暂停</button>
+    <input id="oracleInput" type="text" placeholder="输入你的神谕…">
+    <button id="btnOracle">⚡ 发送神谕</button>
+  </div>
+
+  <div class="status-bar" id="statusBar">就绪</div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ── DOM refs ── */
+  const cfgUrl   = document.getElementById("cfgUrl");
+  const cfgKey   = document.getElementById("cfgKey");
+  const cfgModel = document.getElementById("cfgModel");
+  const cfgTick  = document.getElementById("cfgTick");
+  const grid     = document.getElementById("stateGrid");
+  const debugLog = document.getElementById("debugLog");
+  const cdDisplay= document.getElementById("cdDisplay");
+  const btnPause = document.getElementById("btnPause");
+  const oracleIn = document.getElementById("oracleInput");
+  const btnOracle= document.getElementById("btnOracle");
+  const statusBar= document.getElementById("statusBar");
+
+  /* ── State ── */
+  const INITIAL_STATE = { "树木": 125, "环境质量": 100, "人口": 50 };
+  let currentState = { ...INITIAL_STATE };
+  let previousState = {};
+  let paused = false;
+  let countdown = 0;
+  let tickTimer = null;
+  let requesting = false;
+
+  /* ── localStorage helpers ── */
+  function saveConfig() {
+    const cfg = {
+      apiUrl: cfgUrl.value,
+      apiKey: cfgKey.value,
+      model: cfgModel.value,
+      tick: cfgTick.value
+    };
+    localStorage.setItem("worldbox_cfg", JSON.stringify(cfg));
+  }
+
+  function loadConfig() {
+    try {
+      const cfg = JSON.parse(localStorage.getItem("worldbox_cfg"));
+      if (cfg) {
+        cfgUrl.value   = cfg.apiUrl  || "";
+        cfgKey.value   = cfg.apiKey  || "";
+        cfgModel.value = cfg.model   || "";
+        cfgTick.value  = cfg.tick    || 10;
+      }
+    } catch (e) { console.warn("loadConfig:", e); }
+  }
+
+  [cfgUrl, cfgKey, cfgModel, cfgTick].forEach(el =>
+    el.addEventListener("input", saveConfig)
+  );
+
+  /* ── Render grid ── */
+  function renderState() {
+    grid.innerHTML = "";
+    const keys = Object.keys(currentState);
+    keys.forEach(key => {
+      const card = document.createElement("div");
+      card.className = "card";
+      const val = currentState[key];
+      const oldVal = previousState[key];
+
+      if (oldVal === undefined) {
+        card.classList.add("flash-new");
+      } else if (typeof val === "number" && typeof oldVal === "number") {
+        if (val > oldVal) card.classList.add("flash-up");
+        else if (val < oldVal) card.classList.add("flash-down");
+      }
+
+      card.innerHTML =
+        '<div class="key">' + escapeHtml(String(key)) + '</div>' +
+        '<div class="value">' + escapeHtml(String(val)) + '</div>';
+      grid.appendChild(card);
+    });
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  /* ── Debug log ── */
+  function appendDebugLog(json) {
+    const ts = new Date().toLocaleTimeString();
+    const entry = "[" + ts + "]\n" + JSON.stringify(json, null, 2) + "\n\n";
+    debugLog.textContent = entry + debugLog.textContent;
+  }
+
+  /* ── API call ── */
+  async function callEvolve(userPrompt) {
+    const apiUrl = cfgUrl.value.trim();
+    const apiKey = cfgKey.value.trim();
+    const model  = cfgModel.value.trim();
+
+    if (!apiUrl || !apiKey || !model) {
+      setStatus("⚠ 请先完整填写配置区", true);
+      return false;
+    }
+
+    requesting = true;
+    setStatus("🔄 正在请求 LLM…");
+
+    const backendUrl = (location.origin.includes("file://") ? "http://localhost:3000" : location.origin) + "/evolve";
+
+    try {
+      const resp = await fetch(backendUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          apiUrl,
+          apiKey,
+          model,
+          current_state: currentState,
+          user_prompt: userPrompt || ""
+        })
+      });
+
+      const data = await resp.json();
+      appendDebugLog(data);
+
+      if (!resp.ok) {
+        setStatus("❌ 后端错误: " + (data.error || resp.statusText), true);
+        return false;
+      }
+
+      previousState = { ...currentState };
+      currentState = data;
+      renderState();
+      setStatus("✅ 世界已演变 — " + new Date().toLocaleTimeString());
+      return true;
+    } catch (err) {
+      appendDebugLog({ error: err.message });
+      setStatus("❌ 网络错误: " + err.message, true);
+      return false;
+    } finally {
+      requesting = false;
+    }
+  }
+
+  /* ── Status bar ── */
+  function setStatus(msg, isError) {
+    statusBar.textContent = msg;
+    statusBar.className = "status-bar" + (isError ? " error" : "");
+  }
+
+  /* ── Timer / countdown ── */
+  function getTickSeconds() {
+    const v = parseInt(cfgTick.value, 10);
+    return (v && v > 0) ? v : 10;
+  }
+
+  function startCountdown() {
+    stopCountdown();
+    countdown = getTickSeconds();
+    cdDisplay.textContent = countdown;
+    tickTimer = setInterval(() => {
+      if (paused || requesting) return;
+      countdown--;
+      cdDisplay.textContent = Math.max(countdown, 0);
+      if (countdown <= 0) {
+        stopCountdown();
+        callEvolve("").then(() => startCountdown());
+      }
+    }, 1000);
+  }
+
+  function stopCountdown() {
+    if (tickTimer) { clearInterval(tickTimer); tickTimer = null; }
+  }
+
+  /* ── Pause / resume ── */
+  btnPause.addEventListener("click", () => {
+    paused = !paused;
+    btnPause.textContent = paused ? "▶ 继续" : "⏸ 暂停";
+    btnPause.className = paused ? "pause danger" : "pause";
+  });
+
+  /* ── Send oracle ── */
+  btnOracle.addEventListener("click", async () => {
+    const text = oracleIn.value.trim();
+    if (!text) return;
+    oracleIn.value = "";
+    stopCountdown();
+    await callEvolve(text);
+    startCountdown();
+  });
+
+  oracleIn.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") btnOracle.click();
+  });
+
+  /* ── Init ── */
+  loadConfig();
+  previousState = {};          // first render shows all as "new"
+  renderState();
+  startCountdown();
+})();
+</script>
+</body>
+</html>
