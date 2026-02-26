@@ -1,9 +1,11 @@
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
 
 const SYSTEM_PROMPT = `你是一个"世界规则推演引擎"。你的职责是根据当前世界状态和可能的神谕（玩家指令），推演出下一个时间步的世界状态。
 
