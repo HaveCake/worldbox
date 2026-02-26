@@ -62,7 +62,12 @@ app.post("/evolve", async (req, res) => {
       return res.status(502).json({ error: "No content in LLM response" });
     }
 
-    const newState = JSON.parse(content);
+    let newState;
+    try {
+      newState = JSON.parse(content);
+    } catch {
+      return res.status(502).json({ error: "LLM returned invalid JSON", raw: content });
+    }
     return res.json(newState);
   } catch (err) {
     return res.status(500).json({ error: err.message });
