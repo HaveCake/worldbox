@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const path = require("path");
 const express = require("express");
 const cors = require("cors");
@@ -33,11 +35,34 @@ function extractJSON(text) {
   return JSON.parse(text);
 }
 
+function normalizeApiUrl(rawUrl) {
+  const url = rawUrl.trim().replace(/\/+$/, "");
+  try {
+    new URL(url);
+  } catch {
+    throw new Error("Invalid API URL format");
+  }
+  if (url.endsWith("/v1/chat/completions")) return url;
+  if (url.endsWith("/v1")) return url + "/chat/completions";
+  return url + "/v1/chat/completions";
+}
+
 app.post("/evolve", async (req, res) => {
-  const { apiUrl, apiKey, model, current_state, user_prompt, temperature } = req.body;
+  const body = req.body;
+  const apiUrl = (body.apiUrl && body.apiUrl.trim()) || process.env.DEFAULT_API_URL || "";
+  const apiKey = (body.apiKey && body.apiKey.trim()) || process.env.DEFAULT_API_KEY || "";
+  const model  = (body.model  && body.model.trim())  || process.env.DEFAULT_MODEL   || "";
+  const { current_state, user_prompt, temperature } = body;
 
   if (!apiUrl || !apiKey || !model || !current_state) {
     return res.status(400).json({ error: "Missing required fields: apiUrl, apiKey, model, current_state" });
+  }
+
+  let endpoint;
+  try {
+    endpoint = normalizeApiUrl(apiUrl);
+  } catch {
+    return res.status(400).json({ error: "Invalid API URL: please check the URL format" });
   }
 
   const userMessage =
@@ -56,8 +81,6 @@ app.post("/evolve", async (req, res) => {
   if (temperature !== undefined && temperature !== null) {
     payload.temperature = Number(temperature);
   }
-
-  const endpoint = apiUrl.replace(/\/+$/, "") + "/v1/chat/completions";
 
   try {
     const response = await fetch(endpoint, {
@@ -102,3 +125,4 @@ if (require.main === module) {
 
 module.exports = app;
 module.exports.extractJSON = extractJSON;
+module.exports.normalizeApiUrl = normalizeApiUrl;
