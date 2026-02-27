@@ -15,6 +15,8 @@
 - **Raw JSON 日志**：实时展示每一轮 LLM 返回的原始 JSON，方便调试。
 - **明/暗主题切换**：支持深色与浅色主题，偏好保存于本地存储。
 - **可配置参数**：API 地址、Key、模型、AI 创造力（Temperature）、Tick 间隔均可在设置面板中修改并持久化。
+- **服务端默认配置**：管理员可在服务器的 `.env` 文件中预设 API 地址、Key 和模型，用户无需填写即可直接使用；未配置时行为与之前完全一致，仍需用户自行填写。
+- **URL 自动规范化**：无论用户填写的是 `https://api.openai.com`、`https://api.openai.com/v1` 还是完整路径，服务端均能自动修正为正确的 Chat Completions 端点；格式错误时会明确提示。
 - **兼容任意 OpenAI 兼容接口**：只要提供符合 OpenAI Chat Completions 规范的 API 即可，支持 OpenAI、Azure、本地部署模型等。
 
 ---
@@ -23,7 +25,7 @@
 
 | 层次 | 技术 |
 |------|------|
-| 后端 | Node.js (≥18) + Express |
+| 后端 | Node.js (≥18) + Express + dotenv |
 | 前端 | 纯 HTML/CSS/JavaScript（无框架） |
 | AI   | 任意 OpenAI 兼容 Chat Completions API |
 | 测试 | Node.js 内置 `node:test` |
@@ -47,6 +49,10 @@ cd worldbox
 # 安装依赖
 npm install
 
+# （可选）配置服务端默认 API 凭据，详见下方"服务端默认配置"一节
+cp .env.example .env
+# 然后编辑 .env，填入你的 DEFAULT_API_URL / DEFAULT_API_KEY / DEFAULT_MODEL
+
 # 启动服务器（默认端口 3000）
 npm start
 ```
@@ -67,17 +73,52 @@ PORT=8080 npm start
 
 ## ⚙️ 配置
 
+### 前端用户配置
+
 首次打开页面后，点击右上角的 **⚙️ 设置** 按钮，填写以下参数：
 
 | 参数 | 说明 | 示例 |
 |------|------|------|
-| **API Base URL** | LLM 接口的根地址（不含 `/v1`） | `https://api.openai.com` |
+| **API Base URL** | LLM 接口地址，支持多种格式（见下方说明） | `https://api.openai.com` |
 | **API Key** | 对应 API 的鉴权 Key | `sk-...` |
 | **Model** | 使用的模型名称 | `gpt-4o` |
 | **AI 创造力 (Temperature)** | 控制 LLM 输出随机性，范围 0–2 | `1.2` |
 | **Tick 间隔（秒）** | 世界自动演变的时间间隔 | `10` |
 
+> **API Base URL 格式**：以下写法均被自动识别并修正，无需手动补全路径：
+> - `https://api.openai.com`
+> - `https://api.openai.com/v1`
+> - `https://api.openai.com/v1/chat/completions`
+>
+> 若服务端已配置默认值，三个字段均可留空，留空时将使用服务器默认配置。
+
 配置保存于浏览器的 `localStorage`，刷新页面后自动恢复。
+
+### 服务端默认配置（可选）
+
+适用于**自用**或**给受信任用户使用**的场景：在服务器上预设 API 凭据，用户无需在前端填写任何 API 信息即可直接使用。
+
+1. 复制模板文件：
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. 编辑 `.env`，填入你的默认值：
+
+   ```dotenv
+   DEFAULT_API_URL=https://api.openai.com
+   DEFAULT_API_KEY=sk-your-key-here
+   DEFAULT_MODEL=gpt-4o
+   ```
+
+3. 重启服务器，配置即生效。
+
+> **说明**：
+> - 三个环境变量均为可选，可只设置部分。
+> - 用户在前端填写的值**优先级更高**，会覆盖服务端默认值。
+> - 未配置且用户也未填写时，`/evolve` 接口仍会返回 400 错误，提示用户填写。
+> - `.env` 文件已加入 `.gitignore`，不会被提交到版本库。
 
 ---
 
@@ -101,9 +142,9 @@ PORT=8080 npm start
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `apiUrl` | string | ✅ | LLM API 根地址 |
-| `apiKey` | string | ✅ | API 鉴权 Key |
-| `model` | string | ✅ | 模型名称 |
+| `apiUrl` | string | ⚠️ 条件必填 | LLM API 地址（多种格式均支持）；若服务端已设置 `DEFAULT_API_URL` 则可省略 |
+| `apiKey` | string | ⚠️ 条件必填 | API 鉴权 Key；若服务端已设置 `DEFAULT_API_KEY` 则可省略 |
+| `model` | string | ⚠️ 条件必填 | 模型名称；若服务端已设置 `DEFAULT_MODEL` 则可省略 |
 | `current_state` | object | ✅ | 当前世界状态 JSON 对象 |
 | `user_prompt` | string | ❌ | 玩家神谕（为空时进行自然演变） |
 | `temperature` | number | ❌ | LLM 温度参数（0–2） |
@@ -123,7 +164,7 @@ PORT=8080 npm start
 
 | 状态码 | 说明 |
 |--------|------|
-| `400`  | 缺少必填字段 |
+| `400`  | 缺少必填字段，或 `apiUrl` 格式无效 |
 | `500`  | 服务器内部错误 |
 | `502`  | LLM 返回无效内容 |
 
@@ -138,9 +179,12 @@ worldbox/
 ├── test/
 │   └── server.test.js  # 后端单元测试
 ├── server.js           # Express 后端入口
+├── .env.example        # 服务端默认配置模板（复制为 .env 后填入真实值）
 ├── package.json
 └── README.md
 ```
+
+> `.env` 文件（真实密钥）已加入 `.gitignore`，不会被提交到版本库。
 
 ---
 

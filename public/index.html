@@ -166,13 +166,13 @@ footer .gh-icon{display:inline-block;vertical-align:middle;margin-right:4px}
   <div class="modal">
     <h2>⚙️ 设置</h2>
     <label>API Base URL
-      <input id="cfgUrl" type="text" placeholder="https://api.openai.com">
+      <input id="cfgUrl" type="text" placeholder="https://api.openai.com（未填写则使用服务器默认配置，如已配置）">
     </label>
     <label>API Key
-      <input id="cfgKey" type="password" placeholder="sk-...">
+      <input id="cfgKey" type="password" placeholder="sk-...（未填写则使用服务器默认配置，如已配置）">
     </label>
     <label>Model
-      <input id="cfgModel" type="text" placeholder="gpt-4o">
+      <input id="cfgModel" type="text" placeholder="gpt-4o（未填写则使用服务器默认配置，如已配置）">
     </label>
     <label>AI 创造力 (Temperature)
       <div class="range-row">
@@ -380,11 +380,6 @@ footer .gh-icon{display:inline-block;vertical-align:middle;margin-right:4px}
     const apiKey = cfgKey.value.trim();
     const model  = cfgModel.value.trim();
     const temperature = parseFloat(cfgTemp.value);
-
-    if (!apiUrl || !apiKey || !model) {
-      setStatus("⚠ 请先在设置中完整填写配置", true);
-      return false;
-    }
 
     requesting = true;
     setStatus("🔄 正在请求 LLM…");
