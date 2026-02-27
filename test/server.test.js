@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const http = require("node:http");
 
 const app = require("../server");
+const { extractJSON } = require("../server");
 
 function request(server, method, path, body) {
   return new Promise((resolve, reject) => {
@@ -50,5 +51,28 @@ describe("/evolve endpoint", () => {
   it("returns CORS headers", async () => {
     const res = await request(server, "POST", "/evolve", {});
     assert.equal(res.headers["access-control-allow-origin"], "*");
+  });
+});
+
+describe("extractJSON", () => {
+  it("parses plain JSON", () => {
+    const result = extractJSON('{"a":1}');
+    assert.deepEqual(result, { a: 1 });
+  });
+
+  it("extracts JSON from fenced code block", () => {
+    const input = 'Here is the result:\n```json\n{"trees": 100}\n```\nDone.';
+    const result = extractJSON(input);
+    assert.deepEqual(result, { trees: 100 });
+  });
+
+  it("extracts JSON from text with surrounding prose", () => {
+    const input = 'The new state is: {"pop": 50, "food": 80} as computed.';
+    const result = extractJSON(input);
+    assert.deepEqual(result, { pop: 50, food: 80 });
+  });
+
+  it("throws on completely invalid input", () => {
+    assert.throws(() => extractJSON("no json here"));
   });
 });

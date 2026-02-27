@@ -6,35 +6,65 @@
 <title>上帝模拟器 — God Simulator</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0d1117;--surface:#161b22;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--accent:#58a6ff;--green:#3fb950;--red:#f85149;--yellow:#d29922;--font-mono:'SF Mono','Cascadia Code','Fira Code','Consolas',monospace}
-html,body{height:100%;font-family:var(--font-mono);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
-#app{display:flex;flex-direction:column;min-height:100vh;padding:16px;gap:16px;max-width:1200px;margin:0 auto}
-h1{font-size:20px;font-weight:600;color:var(--accent);text-align:center;letter-spacing:2px}
-h1 span{color:var(--muted);font-weight:400;font-size:13px}
 
-/* ── Config ── */
-.config{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:end}
-.config label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);flex:1 1 180px}
-.config label.small{flex:0 0 120px}
-.config input{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:6px 10px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;transition:border-color .2s}
-.config input:focus{border-color:var(--accent)}
+/* ── Theme Variables ── */
+:root{
+  --bg:#0d1117;--surface:#161b22;--border:#30363d;--text:#e6edf3;
+  --muted:#8b949e;--accent:#58a6ff;--green:#3fb950;--red:#f85149;
+  --yellow:#d29922;--card-bg:#161b22;--overlay:rgba(0,0,0,.55);
+  --footer-text:#8b949e;
+  --font-mono:'SF Mono','Cascadia Code','Fira Code','Consolas',monospace;
+}
+[data-theme="light"]{
+  --bg:#f0f2f5;--surface:#ffffff;--border:#d0d7de;--text:#1f2328;
+  --muted:#656d76;--accent:#0969da;--green:#1a7f37;--red:#cf222e;
+  --yellow:#9a6700;--card-bg:#ffffff;--overlay:rgba(0,0,0,.35);
+  --footer-text:#656d76;
+}
+
+html,body{height:100%;font-family:var(--font-mono);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+
+/* ── App layout ── */
+#app{display:flex;flex-direction:column;min-height:100vh;max-width:1200px;margin:0 auto;padding:0 16px}
+
+/* ── Top bar ── */
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+.top-bar h1{font-size:20px;font-weight:600;color:var(--accent);letter-spacing:2px;flex:1;text-align:center}
+.top-bar h1 span{color:var(--muted);font-weight:400;font-size:13px}
+.top-bar-actions{display:flex;gap:6px;position:absolute;right:16px}
+.icon-btn{background:var(--surface);border:1px solid var(--border);border-radius:8px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:var(--text);transition:background .2s,border-color .2s}
+.icon-btn:hover{border-color:var(--accent);background:var(--accent);color:#fff}
+
+/* ── Main content ── */
+.main-content{flex:1;display:flex;flex-direction:column;gap:16px;padding:8px 0}
+
+/* ── Section title ── */
+.section-title{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+
+/* ── Collapsible categories ── */
+details.category{margin-bottom:4px}
+details.category>summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--accent);padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;list-style:none;display:flex;align-items:center;gap:8px;user-select:none;transition:background .2s}
+details.category>summary::-webkit-details-marker{display:none}
+details.category>summary::before{content:'▶';font-size:10px;transition:transform .2s;display:inline-block}
+details.category[open]>summary::before{transform:rotate(90deg)}
+details.category>summary:hover{background:var(--accent);color:#fff}
+details.category .grid{padding:10px 0 6px}
 
 /* ── Status Grid ── */
-.section-title{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding-bottom:4px;border-bottom:1px solid var(--border)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;padding-top:8px}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;transition:transform .15s,box-shadow .3s,background .4s}
-.card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.card{background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;transition:transform .15s,box-shadow .3s,background .4s}
+.card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.15)}
 .card .key{font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
 .card .value{font-size:26px;font-weight:700;color:var(--text)}
 .card.flash-up{animation:flashUp .6s ease}
 .card.flash-down{animation:flashDown .6s ease}
 .card.flash-new{animation:flashNew .8s ease}
-@keyframes flashUp{0%{background:rgba(63,185,80,.35)}100%{background:var(--surface)}}
-@keyframes flashDown{0%{background:rgba(248,81,73,.35)}100%{background:var(--surface)}}
-@keyframes flashNew{0%{background:rgba(210,153,34,.5);transform:scale(1.05)}100%{background:var(--surface);transform:scale(1)}}
+@keyframes flashUp{0%{background:rgba(63,185,80,.35)}100%{background:var(--card-bg)}}
+@keyframes flashDown{0%{background:rgba(248,81,73,.35)}100%{background:var(--card-bg)}}
+@keyframes flashNew{0%{background:rgba(210,153,34,.5);transform:scale(1.05)}100%{background:var(--card-bg);transform:scale(1)}}
 
 /* ── Debug Log ── */
-.debug{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px;flex:0 0 auto}
+.debug{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px}
 .debug pre{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:12px;max-height:200px;overflow-y:auto;font-size:12px;color:var(--green);white-space:pre-wrap;word-break:break-all}
 
 /* ── Controls ── */
@@ -43,21 +73,98 @@ h1 span{color:var(--muted);font-weight:400;font-size:13px}
 .controls .countdown strong{color:var(--yellow);font-size:16px}
 .controls button{background:var(--accent);color:#fff;border:none;border-radius:4px;padding:7px 16px;font-family:var(--font-mono);font-size:13px;cursor:pointer;transition:opacity .2s}
 .controls button:hover{opacity:.85}
-.controls button.pause{background:var(--yellow);color:var(--bg)}
+.controls button.pause{background:var(--yellow);color:#1f2328}
 .controls button.danger{background:var(--red)}
 .controls input[type="text"]{flex:1;min-width:200px;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:6px 10px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none}
 .controls input[type="text"]:focus{border-color:var(--accent)}
 
 .status-bar{font-size:12px;color:var(--muted);text-align:center}
 .status-bar.error{color:var(--red)}
+
+/* ── Modal overlay ── */
+.modal-overlay{position:fixed;inset:0;background:var(--overlay);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-overlay.active{opacity:1;pointer-events:auto}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px 24px;width:92%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.4);transform:translateY(20px);transition:transform .25s}
+.modal-overlay.active .modal{transform:translateY(0)}
+.modal h2{font-size:18px;color:var(--accent);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.modal label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);margin-bottom:14px}
+.modal input[type="text"],.modal input[type="password"],.modal input[type="number"]{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:8px 12px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;width:100%;transition:border-color .2s}
+.modal input:focus{border-color:var(--accent)}
+.modal .range-row{display:flex;align-items:center;gap:10px}
+.modal input[type="range"]{flex:1;accent-color:var(--accent)}
+.modal .range-val{font-size:14px;font-weight:700;color:var(--text);min-width:32px;text-align:center}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.modal-actions button{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:9px 22px;font-family:var(--font-mono);font-size:13px;cursor:pointer;transition:opacity .2s}
+.modal-actions button:hover{opacity:.85}
+
+/* ── Footer ── */
+footer{text-align:center;padding:18px 0 14px;font-size:12px;color:var(--footer-text);border-top:1px solid var(--border);margin-top:auto}
+footer a{color:var(--accent);text-decoration:none;transition:opacity .2s}
+footer a:hover{opacity:.7}
+footer .gh-icon{display:inline-block;vertical-align:middle;margin-right:4px}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .top-bar h1{font-size:16px}
+  .top-bar h1 span{display:block;font-size:11px}
+  .grid{grid-template-columns:1fr}
+  .card{padding:20px}
+  .card .value{font-size:30px}
+  .controls{flex-direction:column;align-items:stretch}
+  .controls .countdown{min-width:auto;text-align:center}
+  .controls input[type="text"]{min-width:auto}
+  .modal{width:96%;padding:22px 18px}
+}
 </style>
 </head>
 <body>
 <div id="app">
-  <h1>🌍 上帝模拟器 <span>God Simulator MVP</span></h1>
+  <!-- Top bar -->
+  <div class="top-bar" style="position:relative">
+    <h1>🌍 上帝模拟器 <span>God Simulator</span></h1>
+    <div class="top-bar-actions">
+      <button class="icon-btn" id="btnTheme" title="切换主题">🌙</button>
+      <button class="icon-btn" id="btnSettings" title="设置">⚙️</button>
+    </div>
+  </div>
 
-  <!-- Config -->
-  <div class="config">
+  <!-- Main content -->
+  <div class="main-content">
+    <!-- State Grid (dynamic categories) -->
+    <div class="section-title">📊 世界状态监控</div>
+    <div id="stateGrid"></div>
+
+    <!-- Debug Log -->
+    <div class="debug">
+      <div class="section-title">🖥 Raw JSON 监控日志</div>
+      <pre id="debugLog">等待第一次数据…</pre>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="countdown">距离下次刷新还剩 <strong id="cdDisplay">-</strong> 秒</div>
+      <button id="btnPause" class="pause">⏸ 暂停</button>
+      <input id="oracleInput" type="text" placeholder="输入你的神谕…">
+      <button id="btnOracle">⚡ 发送神谕</button>
+    </div>
+
+    <div class="status-bar" id="statusBar">就绪</div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    本项目采用 GPL-3.0 License 开源 &copy; 2026 HaveCake &nbsp;|&nbsp;
+    <a href="https://github.com/HaveCake/worldbox" target="_blank" rel="noopener noreferrer">
+      <svg class="gh-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+  </footer>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2>⚙️ 设置</h2>
     <label>API Base URL
       <input id="cfgUrl" type="text" placeholder="https://api.openai.com">
     </label>
@@ -67,30 +174,19 @@ h1 span{color:var(--muted);font-weight:400;font-size:13px}
     <label>Model
       <input id="cfgModel" type="text" placeholder="gpt-4o">
     </label>
-    <label class="small">Tick 间隔（秒）
+    <label>AI 创造力 (Temperature)
+      <div class="range-row">
+        <input id="cfgTemp" type="range" min="0" max="2" step="0.1" value="1.2">
+        <span class="range-val" id="tempDisplay">1.2</span>
+      </div>
+    </label>
+    <label>Tick 间隔（秒）
       <input id="cfgTick" type="number" min="1" value="10">
     </label>
+    <div class="modal-actions">
+      <button id="btnSaveSettings">💾 保存并关闭</button>
+    </div>
   </div>
-
-  <!-- State Grid -->
-  <div class="section-title">📊 世界状态监控</div>
-  <div class="grid" id="stateGrid"></div>
-
-  <!-- Debug Log -->
-  <div class="debug">
-    <div class="section-title">🖥 Raw JSON 监控日志</div>
-    <pre id="debugLog">等待第一次数据…</pre>
-  </div>
-
-  <!-- Controls -->
-  <div class="controls">
-    <div class="countdown">距离下次刷新还剩 <strong id="cdDisplay">-</strong> 秒</div>
-    <button id="btnPause" class="pause">⏸ 暂停</button>
-    <input id="oracleInput" type="text" placeholder="输入你的神谕…">
-    <button id="btnOracle">⚡ 发送神谕</button>
-  </div>
-
-  <div class="status-bar" id="statusBar">就绪</div>
 </div>
 
 <script>
@@ -98,26 +194,69 @@ h1 span{color:var(--muted);font-weight:400;font-size:13px}
   "use strict";
 
   /* ── DOM refs ── */
-  const cfgUrl   = document.getElementById("cfgUrl");
-  const cfgKey   = document.getElementById("cfgKey");
-  const cfgModel = document.getElementById("cfgModel");
-  const cfgTick  = document.getElementById("cfgTick");
-  const grid     = document.getElementById("stateGrid");
-  const debugLog = document.getElementById("debugLog");
-  const cdDisplay= document.getElementById("cdDisplay");
-  const btnPause = document.getElementById("btnPause");
-  const oracleIn = document.getElementById("oracleInput");
-  const btnOracle= document.getElementById("btnOracle");
-  const statusBar= document.getElementById("statusBar");
+  const cfgUrl     = document.getElementById("cfgUrl");
+  const cfgKey     = document.getElementById("cfgKey");
+  const cfgModel   = document.getElementById("cfgModel");
+  const cfgTick    = document.getElementById("cfgTick");
+  const cfgTemp    = document.getElementById("cfgTemp");
+  const tempDisplay= document.getElementById("tempDisplay");
+  const grid       = document.getElementById("stateGrid");
+  const debugLog   = document.getElementById("debugLog");
+  const cdDisplay  = document.getElementById("cdDisplay");
+  const btnPause   = document.getElementById("btnPause");
+  const oracleIn   = document.getElementById("oracleInput");
+  const btnOracle  = document.getElementById("btnOracle");
+  const statusBar  = document.getElementById("statusBar");
+  const btnSettings= document.getElementById("btnSettings");
+  const btnSave    = document.getElementById("btnSaveSettings");
+  const modalOverlay= document.getElementById("modalOverlay");
+  const btnTheme   = document.getElementById("btnTheme");
 
   /* ── State ── */
-  const INITIAL_STATE = { "树木": 125, "环境质量": 100, "人口": 50 };
-  let currentState = { ...INITIAL_STATE };
+  const INITIAL_STATE = {
+    "自然生态": { "树木": 125, "环境质量": 100 },
+    "人类社会": { "人口": 50 }
+  };
+  let currentState = JSON.parse(JSON.stringify(INITIAL_STATE));
   let previousState = {};
   let paused = false;
   let countdown = 0;
   let tickTimer = null;
   let requesting = false;
+
+  /* ── Theme ── */
+  function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    btnTheme.textContent = theme === "dark" ? "🌙" : "☀️";
+    localStorage.setItem("worldbox_theme", theme);
+  }
+
+  btnTheme.addEventListener("click", () => {
+    const cur = document.documentElement.getAttribute("data-theme") || "dark";
+    applyTheme(cur === "dark" ? "light" : "dark");
+  });
+
+  (function initTheme() {
+    const saved = localStorage.getItem("worldbox_theme");
+    applyTheme(saved || "dark");
+  })();
+
+  /* ── Settings modal ── */
+  btnSettings.addEventListener("click", () => modalOverlay.classList.add("active"));
+  btnSave.addEventListener("click", () => {
+    saveConfig();
+    modalOverlay.classList.remove("active");
+  });
+  modalOverlay.addEventListener("click", (e) => {
+    if (e.target === modalOverlay) {
+      saveConfig();
+      modalOverlay.classList.remove("active");
+    }
+  });
+
+  cfgTemp.addEventListener("input", () => {
+    tempDisplay.textContent = cfgTemp.value;
+  });
 
   /* ── localStorage helpers ── */
   function saveConfig() {
@@ -125,7 +264,8 @@ h1 span{color:var(--muted);font-weight:400;font-size:13px}
       apiUrl: cfgUrl.value,
       apiKey: cfgKey.value,
       model: cfgModel.value,
-      tick: cfgTick.value
+      tick: cfgTick.value,
+      temperature: cfgTemp.value
     };
     localStorage.setItem("worldbox_cfg", JSON.stringify(cfg));
   }
@@ -138,36 +278,79 @@ h1 span{color:var(--muted);font-weight:400;font-size:13px}
         cfgKey.value   = cfg.apiKey  || "";
         cfgModel.value = cfg.model   || "";
         cfgTick.value  = cfg.tick    || 10;
+        cfgTemp.value  = cfg.temperature !== undefined ? cfg.temperature : 1.2;
+        tempDisplay.textContent = cfgTemp.value;
       }
     } catch (e) { console.warn("loadConfig:", e); }
   }
 
-  [cfgUrl, cfgKey, cfgModel, cfgTick].forEach(el =>
-    el.addEventListener("input", saveConfig)
-  );
+  /* ── Render grid (nested / flat compatible) ── */
+  function isNestedState(state) {
+    return Object.values(state).some(v => typeof v === "object" && v !== null && !Array.isArray(v));
+  }
 
-  /* ── Render grid ── */
   function renderState() {
     grid.innerHTML = "";
-    const keys = Object.keys(currentState);
-    keys.forEach(key => {
-      const card = document.createElement("div");
-      card.className = "card";
-      const val = currentState[key];
-      const oldVal = previousState[key];
+    if (isNestedState(currentState)) {
+      renderNestedState();
+    } else {
+      renderFlatState();
+    }
+  }
 
-      if (oldVal === undefined) {
-        card.classList.add("flash-new");
-      } else if (typeof val === "number" && typeof oldVal === "number") {
-        if (val > oldVal) card.classList.add("flash-up");
-        else if (val < oldVal) card.classList.add("flash-down");
+  function renderNestedState() {
+    const categories = Object.keys(currentState);
+    categories.forEach(cat => {
+      const val = currentState[cat];
+      if (typeof val === "object" && val !== null && !Array.isArray(val)) {
+        const details = document.createElement("details");
+        details.className = "category";
+        details.open = true;
+        const summary = document.createElement("summary");
+        summary.textContent = cat;
+        details.appendChild(summary);
+
+        const subGrid = document.createElement("div");
+        subGrid.className = "grid";
+        const prevCat = (previousState && typeof previousState[cat] === "object") ? previousState[cat] : {};
+
+        Object.keys(val).forEach(key => {
+          const card = createCard(key, val[key], prevCat[key]);
+          subGrid.appendChild(card);
+        });
+
+        details.appendChild(subGrid);
+        grid.appendChild(details);
+      } else {
+        const card = createCard(cat, val, previousState ? previousState[cat] : undefined);
+        grid.appendChild(card);
       }
-
-      card.innerHTML =
-        '<div class="key">' + escapeHtml(String(key)) + '</div>' +
-        '<div class="value">' + escapeHtml(String(val)) + '</div>';
-      grid.appendChild(card);
     });
+  }
+
+  function renderFlatState() {
+    const wrap = document.createElement("div");
+    wrap.className = "grid";
+    Object.keys(currentState).forEach(key => {
+      const card = createCard(key, currentState[key], previousState ? previousState[key] : undefined);
+      wrap.appendChild(card);
+    });
+    grid.appendChild(wrap);
+  }
+
+  function createCard(key, val, oldVal) {
+    const card = document.createElement("div");
+    card.className = "card";
+    if (oldVal === undefined) {
+      card.classList.add("flash-new");
+    } else if (typeof val === "number" && typeof oldVal === "number") {
+      if (val > oldVal) card.classList.add("flash-up");
+      else if (val < oldVal) card.classList.add("flash-down");
+    }
+    card.innerHTML =
+      '<div class="key">' + escapeHtml(String(key)) + '</div>' +
+      '<div class="value">' + escapeHtml(String(val)) + '</div>';
+    return card;
   }
 
   function escapeHtml(s) {
@@ -181,14 +364,25 @@ h1 span{color:var(--muted);font-weight:400;font-size:13px}
     debugLog.textContent = entry + debugLog.textContent;
   }
 
-  /* ── API call ── */
+  /* ── Defensive JSON extraction ── */
+  function extractJSON(text) {
+    try { return JSON.parse(text); } catch (_) { /* fall through */ }
+    const fenced = /```json([\s\S]*?)```/.exec(text);
+    if (fenced) return JSON.parse(fenced[1].trim());
+    const braces = /\{[\s\S]*\}/.exec(text);
+    if (braces) return JSON.parse(braces[0]);
+    throw new Error("Cannot extract JSON");
+  }
+
+  /* ── API call (slice-only: system + current state + new concepts) ── */
   async function callEvolve(userPrompt) {
     const apiUrl = cfgUrl.value.trim();
     const apiKey = cfgKey.value.trim();
     const model  = cfgModel.value.trim();
+    const temperature = parseFloat(cfgTemp.value);
 
     if (!apiUrl || !apiKey || !model) {
-      setStatus("⚠ 请先完整填写配置区", true);
+      setStatus("⚠ 请先在设置中完整填写配置", true);
       return false;
     }
 
@@ -205,12 +399,22 @@ h1 span{color:var(--muted);font-weight:400;font-size:13px}
           apiUrl,
           apiKey,
           model,
+          temperature,
           current_state: currentState,
           user_prompt: userPrompt || ""
         })
       });
 
-      const data = await resp.json();
+      let data;
+      const raw = await resp.text();
+      try {
+        data = extractJSON(raw);
+      } catch {
+        appendDebugLog({ raw_response: raw });
+        setStatus("❌ 响应解析失败", true);
+        return false;
+      }
+
       appendDebugLog(data);
 
       if (!resp.ok) {
@@ -218,7 +422,7 @@ h1 span{color:var(--muted);font-weight:400;font-size:13px}
         return false;
       }
 
-      previousState = { ...currentState };
+      previousState = JSON.parse(JSON.stringify(currentState));
       currentState = data;
       renderState();
       setStatus("✅ 世界已演变 — " + new Date().toLocaleTimeString());
@@ -286,7 +490,7 @@ h1 span{color:var(--muted);font-weight:400;font-size:13px}
 
   /* ── Init ── */
   loadConfig();
-  previousState = {};          // first render shows all as "new"
+  previousState = {};
   renderState();
   startCountdown();
 })();
