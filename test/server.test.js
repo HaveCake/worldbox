@@ -3,7 +3,7 @@ const assert = require("node:assert/strict");
 const http = require("node:http");
 
 const app = require("../server");
-const { extractJSON, normalizeApiUrl, coerceNumber, safeNumber, sanitizeState, summarizeWarnings, getCreativityPreset, describeOracleStrength } = require("../server");
+const { extractJSON, normalizeApiUrl, coerceNumber, safeNumber, sanitizeState, summarizeWarnings, getCreativityPreset, describeOracleStrength, buildCustomPrompt } = require("../server");
 
 function request(server, method, path, body) {
   return new Promise((resolve, reject) => {
@@ -353,5 +353,32 @@ describe("describeOracleStrength", () => {
     for (const v of [0, 30, 60, 90]) {
       assert.ok(describeOracleStrength(v).desc.length > 0);
     }
+  });
+});
+
+describe("buildCustomPrompt", () => {
+  it("includes the user-provided world style prompt", () => {
+    assert.ok(buildCustomPrompt("蒸汽朋克世界，机械与魔法并存").includes("蒸汽朋克世界"));
+  });
+
+  it("uses a fallback driving line when the prompt is empty/undefined", () => {
+    assert.ok(buildCustomPrompt("").includes("玩家未填写"));
+    assert.ok(buildCustomPrompt(undefined).includes("玩家未填写"));
+    assert.ok(buildCustomPrompt(null).includes("玩家未填写"));
+  });
+
+  it("keeps the output-format contract OUT of the custom prompt (separation)", () => {
+    // The user's custom world prompt must NOT carry the strict format rules,
+    // which live only in SHARED_CONSTRAINTS as a separate system message.
+    const cp = buildCustomPrompt("我的世界规则");
+    assert.ok(cp.includes("我的世界规则"));
+    assert.ok(cp.includes("输出规范"), "reminds the model the format contract follows next");
+    assert.ok(!cp.includes("禁止在任何位置使用数组"), "format rules are not merged in");
+    assert.ok(!cp.includes("顶层必须是一个 JSON 对象"), "format rules are not merged in");
+  });
+
+  it("returns a plain string suitable for a system message", () => {
+    assert.equal(typeof buildCustomPrompt("规则"), "string");
+    assert.ok(buildCustomPrompt("规则").length > 20);
   });
 });

@@ -34,7 +34,8 @@ body{min-height:100vh;font-family:var(--font-mono);background:var(--bg);color:va
 .top-bar{display:flex;align-items:center;gap:14px;padding:16px 0 12px}
 .brand{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
 .brand .logo{width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;font-size:22px;background:var(--accent-soft);border:1px solid var(--border);border-radius:10px}
-.brand h1{font-size:19px;font-weight:700;letter-spacing:1px;color:var(--text);white-space:nowrap}
+.brand > div{min-width:0}
+.brand h1{font-size:19px;font-weight:700;letter-spacing:1px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .brand h1 em{font-style:normal;color:var(--accent)}
 .brand .sub{font-size:11px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .top-bar-actions{display:flex;gap:8px;flex:none}
@@ -124,6 +125,14 @@ details.category .grid{padding:10px 12px 12px}
 .qp-btn.active{border-color:var(--accent);background:var(--accent-soft)}
 .qp-btn .qp-name{font-size:13px;font-weight:700;color:var(--text)}
 .qp-btn .qp-desc{font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.35}
+.custom-config{margin-top:10px;display:flex;flex-direction:column;gap:10px;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:10px}
+.custom-row{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted)}
+.custom-row textarea{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:var(--font-mono);font-size:12.5px;resize:vertical;outline:none;min-height:56px}
+.custom-row textarea:focus{border-color:var(--accent)}
+.custom-slider{-webkit-appearance:none;appearance:none;height:5px;border-radius:999px;background:var(--bg-soft);outline:none;cursor:pointer;width:100%}
+.custom-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--accent);cursor:grab}
+.custom-slider::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--accent);cursor:grab}
+.custom-val{color:var(--accent);font-weight:700}
 
 /* ── Meta info in side panel ── */
 .meta-list{display:flex;flex-direction:column;gap:8px;font-size:12.5px}
@@ -161,12 +170,6 @@ details.category .grid{padding:10px 12px 12px}
 .modal label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted);margin-bottom:15px}
 .modal input[type="text"],.modal input[type="password"],.modal input[type="number"]{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;width:100%;transition:border-color .15s}
 .modal input:focus{border-color:var(--accent)}
-.preset-group{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.preset-btn{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;text-align:left;font-family:var(--font-mono);transition:border-color .15s,background .15s}
-.preset-btn:hover{border-color:var(--accent)}
-.preset-btn.active{border-color:var(--accent);background:var(--accent-soft)}
-.preset-btn .preset-name{display:block;font-size:13px;font-weight:700;color:var(--text)}
-.preset-btn .preset-desc{display:block;font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4}
 .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:6px}
 
 /* ── Footer ── */
@@ -178,7 +181,10 @@ footer a:hover{color:var(--accent)}
 @media(max-width:640px){
   #app{padding:0 12px}
   .brand h1{font-size:16px}
+  .brand h1 em{display:none}
   .brand .sub{display:none}
+  .top-bar{gap:8px}
+  .preset-pill{padding:4px 10px}
   .grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
   .card .value{font-size:19px}
   .oracle-row{flex-direction:column}
@@ -282,6 +288,18 @@ footer a:hover{color:var(--accent)}
               <span class="qp-name">🌋 疯狂</span>
               <span class="qp-desc">天马行空·剧变</span>
             </button>
+            <button type="button" class="qp-btn" data-preset="custom" id="qpCustom">
+              <span class="qp-name">✨ 自定义</span>
+              <span class="qp-desc">自调温度 · 写规则</span>
+            </button>
+          </div>
+          <div class="custom-config" id="customConfig" hidden>
+            <label class="custom-row">🎛 温度 <span class="custom-val" id="customTempVal">1.0</span>
+              <input type="range" class="custom-slider" id="customTemp" min="0" max="2" step="0.1" value="1.0">
+            </label>
+            <label class="custom-row">📜 世界提示词
+              <textarea id="customPrompt" rows="3" placeholder="描述你想要的演化风格/规则…（效果等同写实/均衡等预设，留空则均衡自然）。仅决定世界内容与风格，不改变输出格式。"></textarea>
+            </label>
           </div>
         </div>
       </section>
@@ -318,26 +336,6 @@ footer a:hover{color:var(--accent)}
     <label>Model
       <input id="cfgModel" type="text" placeholder="gpt-4o（留空用服务器默认）">
     </label>
-    <label>AI 创造力 — 预设
-      <div class="preset-group" id="presetGroup">
-        <button type="button" class="preset-btn" data-preset="realistic">
-          <span class="preset-name">📔 写实</span>
-          <span class="preset-desc">贴近现实，数值沉稳可信</span>
-        </button>
-        <button type="button" class="preset-btn active" data-preset="balanced">
-          <span class="preset-name">⚖️ 均衡</span>
-          <span class="preset-desc">现实与想象平衡，自然自洽</span>
-        </button>
-        <button type="button" class="preset-btn" data-preset="fantasy">
-          <span class="preset-name">🐉 奇幻</span>
-          <span class="preset-desc">魔法·龙族·脑洞大开</span>
-        </button>
-        <button type="button" class="preset-btn" data-preset="chaotic">
-          <span class="preset-name">🌋 疯狂</span>
-          <span class="preset-desc">天马行空，世界剧变</span>
-        </button>
-      </div>
-    </label>
     <label>Tick 间隔（秒）
       <input id="cfgTick" type="number" min="1" value="10">
     </label>
@@ -356,7 +354,6 @@ footer a:hover{color:var(--accent)}
   const cfgKey     = document.getElementById("cfgKey");
   const cfgModel   = document.getElementById("cfgModel");
   const cfgTick    = document.getElementById("cfgTick");
-  const presetGroup= document.getElementById("presetGroup");
   const grid       = document.getElementById("stateGrid");
   const stateBadge = document.getElementById("stateBadge");
   const debugLog   = document.getElementById("debugLog");
@@ -383,6 +380,10 @@ footer a:hover{color:var(--accent)}
   const presetPill = document.getElementById("presetPill");
   const presetPillName = document.getElementById("presetPillName");
   const quickPresets = document.getElementById("quickPresets");
+  const customConfig = document.getElementById("customConfig");
+  const customTempInput = document.getElementById("customTemp");
+  const customTempVal = document.getElementById("customTempVal");
+  const customPromptInput = document.getElementById("customPrompt");
 
   /* ── State ── */
   const INITIAL_STATE = {
@@ -396,6 +397,8 @@ footer a:hover{color:var(--accent)}
   let tickTimer = null;
   let requesting = false;
   let creativity = "balanced";
+  let customTemp = 1.0;
+  let customPromptText = "";
   let tickCount = 0;
 
   const PRESETS = {
@@ -413,23 +416,30 @@ footer a:hover{color:var(--accent)}
   ];
 
   function setPreset(key) {
-    creativity = (PRESETS[key] ? key : "balanced");
-    const label = PRESETS[creativity].label;
-    document.querySelectorAll(".preset-btn").forEach(btn => {
-      btn.classList.toggle("active", btn.dataset.preset === creativity);
-    });
+    const isCustom = key === "custom";
+    creativity = isCustom ? "custom" : (PRESETS[key] ? key : "balanced");
+    const label = creativity === "custom" ? "自定义" : PRESETS[creativity].label;
     document.querySelectorAll(".qp-btn").forEach(btn => {
       btn.classList.toggle("active", btn.dataset.preset === creativity);
     });
     presetPillName.textContent = label;
     metaPreset.textContent = label;
+    customConfig.hidden = creativity !== "custom";
   }
 
-  document.querySelectorAll(".preset-btn, .qp-btn").forEach(btn => {
+  document.querySelectorAll(".qp-btn").forEach(btn => {
     btn.addEventListener("click", () => setPreset(btn.dataset.preset));
   });
   presetPill.addEventListener("click", () => {
     modalOverlay.classList.add("active");
+  });
+
+  customTempInput.addEventListener("input", () => {
+    customTemp = Number(customTempInput.value);
+    customTempVal.textContent = customTemp.toFixed(1);
+  });
+  customPromptInput.addEventListener("input", () => {
+    customPromptText = customPromptInput.value;
   });
 
   /* ── Strength slider ── */
@@ -475,6 +485,8 @@ footer a:hover{color:var(--accent)}
       model: cfgModel.value,
       tick: cfgTick.value,
       creativity: creativity,
+      customTemp: creativity === "custom" ? customTemp : undefined,
+      customPrompt: creativity === "custom" ? customPromptText : undefined,
       strength: Number(strengthSlider.value)
     };
     localStorage.setItem("worldbox_cfg", JSON.stringify(cfg));
@@ -488,7 +500,16 @@ footer a:hover{color:var(--accent)}
         cfgKey.value   = cfg.apiKey  || "";
         cfgModel.value = cfg.model   || "";
         cfgTick.value  = cfg.tick    || 10;
-        if (cfg.creativity && PRESETS[cfg.creativity]) {
+        if (cfg.customTemp !== undefined || cfg.customPrompt !== undefined) {
+          if (cfg.customTemp !== undefined) customTemp = Math.max(0, Math.min(2, Number(cfg.customTemp) || 1.0));
+          if (cfg.customPrompt !== undefined) customPromptText = String(cfg.customPrompt);
+          customTempInput.value = customTemp;
+          customTempVal.textContent = customTemp.toFixed(1);
+          customPromptInput.value = customPromptText;
+        }
+        if (cfg.creativity === "custom") {
+          setPreset("custom");
+        } else if (cfg.creativity && PRESETS[cfg.creativity]) {
           setPreset(cfg.creativity);
         } else if (cfg.temperature !== undefined) {
           const t = Number(cfg.temperature);
@@ -690,6 +711,8 @@ footer a:hover{color:var(--accent)}
           apiKey,
           model,
           creativity,
+          temperature: creativity === "custom" ? customTemp : undefined,
+          custom_prompt: creativity === "custom" ? customPromptText : undefined,
           oracle_strength: strength,
           current_state: currentState,
           user_prompt: userPrompt || ""

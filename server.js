@@ -128,6 +128,28 @@ function getCreativityPreset(key) {
 }
 
 /**
+ * Build a persona system prompt from a user-supplied "world style" prompt.
+ * IMPORTANT (format separation): this prompt ONLY decides the WORLD's content
+ * and style. It is kept as its OWN system message, separate from
+ * SHARED_CONSTRAINTS (the output-format contract), which is always injected
+ * afterwards as a distinct message so a user prompt can never loosen the rules.
+ */
+function buildCustomPrompt(customPrompt) {
+  const style = (customPrompt && typeof customPrompt === "string" && customPrompt.trim())
+    ? customPrompt.trim() : "";
+  return `你是一个"上帝模拟器"，为玩家推演一个文字世界。下面是玩家自定义的世界风格与演化规则，它决定世界的"味道"（可出现的主题、数值走向、变化节奏）：
+【自定义世界提示词】
+${style ? style : "（玩家未填写，请以均衡、自然、有逻辑的方式自主推演世界。）"}
+【推演规则】
+- 严格依据上面的自定义风格与规则来演化世界。
+- 若 user_prompt 为空：按该风格自然流逝地推演。
+- 若 user_prompt 不为空：先结算神谕影响，再叠加该风格的演化。
+
+【重要】
+上面的自定义提示词只用来决定"世界的内容与风格"，绝不能改变最终输出的 JSON 结构。无论什么情况，都必须完全遵守紧随其后的【输出规范】，只输出一个合法的两层嵌套 JSON 对象。`;
+}
+
+/**
  * Map a 0-100 oracle strength value to a descriptive level used in the prompt.
  * Missing/invalid values fall back to 50 (普通). Note: null counts as missing.
  */
@@ -266,7 +288,7 @@ app.post("/evolve", async (req, res) => {
   const apiUrl = (body.apiUrl && body.apiUrl.trim()) || process.env.DEFAULT_API_URL || "";
   const apiKey = (body.apiKey && body.apiKey.trim()) || process.env.DEFAULT_API_KEY || "";
   const model  = (body.model  && body.model.trim())  || process.env.DEFAULT_MODEL   || "";
-  const { current_state, user_prompt, temperature, creativity } = body;
+  const { current_state, user_prompt, temperature, creativity, custom_prompt } = body;
 
   if (!apiUrl || !apiKey || !model || !current_state) {
     return res.status(400).json({ error: "Missing required fields: apiUrl, apiKey, model, current_state" });
@@ -279,12 +301,24 @@ app.post("/evolve", async (req, res) => {
     return res.status(400).json({ error: "Invalid API URL: please check the URL format" });
   }
 
-  // Select the creativity preset (persona + default temperature). Explicit
-  // client temperature still overrides the preset default.
+  // Select the creativity preset (persona + default temperature). For a custom
+  // creativity the client supplies its own temperature and a world-style prompt.
+  const isCustom = creativity === "custom";
   const preset = getCreativityPreset(creativity);
-  const effectiveTemperature = (temperature !== undefined && temperature !== null && temperature !== "")
-    ? Number(temperature)
-    : preset.temperature;
+  const personaContent = isCustom ? buildCustomPrompt(custom_prompt) : preset.persona;
+
+  let effectiveTemperature;
+  if (isCustom) {
+    // Custom mode: temperature is fully client-controlled (0-2), default 1.0.
+    const t = (temperature !== undefined && temperature !== null && temperature !== "")
+      ? Number(temperature) : 1.0;
+    effectiveTemperature = Number.isFinite(t) ? Math.max(0, Math.min(2, t)) : 1.0;
+  } else {
+    // Preset mode: explicit client temperature still overrides the preset default.
+    effectiveTemperature = (temperature !== undefined && temperature !== null && temperature !== "")
+      ? Number(temperature)
+      : preset.temperature;
+  }
 
   // Oracle strength (0-100): only meaningful when an oracle is present.
   const strength = describeOracleStrength(body.oracle_strength);
@@ -299,8 +333,10 @@ app.post("/evolve", async (req, res) => {
   const payload = {
     model,
     messages: [
-      // Persona (preset-specific) precedes the shared hard constraints.
-      { role: "system", content: preset.persona },
+      // Persona (preset-specific or custom world style) precedes the shared hard
+      // constraints. The custom world prompt is NEVER merged into the format
+      // contract, so it cannot loosen the output rules.
+      { role: "system", content: personaContent },
       { role: "system", content: SHARED_CONSTRAINTS },
       { role: "user", content: userMessage },
     ],
@@ -400,3 +436,4 @@ module.exports.sanitizeState = sanitizeState;
 module.exports.summarizeWarnings = summarizeWarnings;
 module.exports.getCreativityPreset = getCreativityPreset;
 module.exports.describeOracleStrength = describeOracleStrength;
+module.exports.buildCustomPrompt = buildCustomPrompt;

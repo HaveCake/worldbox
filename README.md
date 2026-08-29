@@ -10,6 +10,30 @@
 
 ---
 
+## 📸 截图预览
+
+<div align="center">
+
+**主页 · 世界状态与创造力预设**
+
+![主页](docs/screenshots/home.png)
+
+**自定义创造力**（可调温度 + 编写世界提示词，效果等同预设）
+
+![自定义创造力](docs/screenshots/custom-creativity.png)
+
+**自定义世界推演**（"蒸汽朋克"世界提示词生成的独特世界：科技文明、魔法）
+
+![自定义世界](docs/screenshots/custom-world.png)
+
+**设置面板**（API 配置，创造力设置已集中在主页、不再在设置内重复）
+
+![设置面板](docs/screenshots/settings-modal.png)
+
+</div>
+
+---
+
 ## ✨ 功能特性
 
 - **自动演变**：世界按设定的时间间隔（Tick）自动推演，呈现自然生态、人口、科技等属性的变化。
@@ -21,6 +45,9 @@
 - **Raw JSON 日志**：实时展示每一轮 LLM 返回的原始 JSON，方便调试。
 - **明/暗主题切换**：支持深色与浅色主题，偏好保存于本地存储。
 - **可配置参数**：API 地址、Key、模型、AI 创造力（Temperature）、Tick 间隔均可在设置面板中修改并持久化。
+- **自定义创造力**：除「写实 / 均衡 / 奇幻 / 疯狂」四大预设外，新增「自定义」模式，可自由调节温度（0–2）并编写专属**世界提示词**，让 LLM 按你设定的风格推演（如蒸汽朋克、赛博朋克、末日废土等）。
+- **提示词与格式严格隔离**：用户编写的「世界提示词」与「输出格式约束」始终分属**两条独立的 System 消息**——自定义内容只决定世界的内容与风格，永远无法破坏 LLM 输出的 JSON 规范，确保推演绝不中断。
+- **主页统一管理创造力**：创造力预设精简为**仅放置在主页**（顶部胶囊 + 侧栏快捷预设），设置弹窗不再重复，避免两处配置互相冲突。
 - **服务端默认配置**：管理员可在服务器的 `.env` 文件中预设 API 地址、Key 和模型，用户无需填写即可直接使用；未配置时行为与之前完全一致，仍需用户自行填写。
 - **URL 自动规范化**：无论用户填写的是 `https://api.openai.com`、`https://api.openai.com/v1` 还是完整路径，服务端均能自动修正为正确的 Chat Completions 端点；格式错误时会明确提示。
 - **兼容任意 OpenAI 兼容接口**：只要提供符合 OpenAI Chat Completions 规范的 API 即可，支持 OpenAI、Azure、本地部署模型等。
@@ -195,10 +222,12 @@ PORT=8080 npm start
 ```
 worldbox/
 ├── public/
-│   └── index.html      # 单页前端应用（含双重防御性校验 + 日志标签页）
+│   └── index.html      # 单页前端应用（含双重防御性校验 + 日志标签页 + 自定义创造力）
 ├── test/
-│   └── server.test.js  # 后端单元测试（含规范化的边界用例）
-├── server.js           # Express 后端入口（含严格 Prompt 规范 + sanitizeState 规范化）
+│   └── server.test.js  # 后端单元测试（含规范化的边界用例 + 自定义提示词）
+├── server.js           # Express 后端入口（含严格 Prompt 规范 + sanitizeState 规范化 + buildCustomPrompt）
+├── docs/
+│   └── screenshots/    # README 使用的界面截图
 ├── .env.example        # 服务端默认配置模板（复制为 .env 后填入真实值）
 ├── package.json
 └── README.md
