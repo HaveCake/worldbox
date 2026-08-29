@@ -4,6 +4,9 @@
 
 ![License](https://img.shields.io/badge/license-GPL--3.0-blue)
 ![Node](https://img.shields.io/badge/node-%3E%3D18-green)
+[![Live Demo](https://img.shields.io/badge/在线体验%20·%20worldbox.20110228.xyz-brightgreen)](https://worldbox.20110228.xyz)
+
+> **🌐 在线体验**：[https://worldbox.20110228.xyz](https://worldbox.20110228.xyz) 是一个**在线测试站点**，无需部署、打开即用；前端亦提供了自托管部署方式（见下文）。
 
 ---
 
