@@ -6,6 +6,7 @@
 <title>上帝模拟器 — God Simulator</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
 
 /* ── Theme Variables ── */
 :root{
@@ -124,7 +125,8 @@ details.category .grid{padding:10px 12px 12px}
 .qp-btn:hover{border-color:var(--accent);transform:translateY(-1px)}
 .qp-btn.active{border-color:var(--accent);background:var(--accent-soft)}
 .qp-btn .qp-name{font-size:13px;font-weight:700;color:var(--text)}
-.qp-btn .qp-desc{font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.35}
+#qpCustom{grid-column:1 / -1}
+.qp-btn .qp-desc{font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .custom-config{margin-top:10px;display:flex;flex-direction:column;gap:10px;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:10px}
 .custom-row{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted)}
 .custom-row textarea{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:var(--font-mono);font-size:12.5px;resize:vertical;outline:none;min-height:56px}
