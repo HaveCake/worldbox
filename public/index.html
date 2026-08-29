@@ -9,155 +9,299 @@
 
 /* ── Theme Variables ── */
 :root{
-  --bg:#0d1117;--surface:#161b22;--border:#30363d;--text:#e6edf3;
-  --muted:#8b949e;--accent:#58a6ff;--green:#3fb950;--red:#f85149;
-  --yellow:#d29922;--card-bg:#161b22;--overlay:rgba(0,0,0,.55);
-  --footer-text:#8b949e;
+  --bg:#0a0e14;--bg-soft:#0d1117;--surface:#161b22;--surface-2:#1c2330;--border:#30363d;--border-soft:#21262d;
+  --text:#e6edf3;--muted:#8b949e;--faint:#6e7681;
+  --accent:#58a6ff;--accent-soft:rgba(88,166,255,.12);
+  --green:#3fb950;--red:#f85149;--yellow:#d29922;--purple:#bc8cff;--orange:#f0883e;
+  --card-bg:#161b22;--overlay:rgba(4,8,16,.7);
   --font-mono:'SF Mono','Cascadia Code','Fira Code','Consolas',monospace;
 }
 [data-theme="light"]{
-  --bg:#f0f2f5;--surface:#ffffff;--border:#d0d7de;--text:#1f2328;
-  --muted:#656d76;--accent:#0969da;--green:#1a7f37;--red:#cf222e;
-  --yellow:#9a6700;--card-bg:#ffffff;--overlay:rgba(0,0,0,.35);
-  --footer-text:#656d76;
+  --bg:#f6f8fa;--bg-soft:#f0f2f5;--surface:#ffffff;--surface-2:#f6f8fa;--border:#d0d7de;--border-soft:#e4e9ee;
+  --text:#1f2328;--muted:#656d76;--faint:#8c959f;
+  --accent:#0969da;--accent-soft:rgba(9,105,218,.08);
+  --green:#1a7f37;--red:#cf222e;--yellow:#9a6700;--purple:#8250df;--orange:#bc4c00;
+  --card-bg:#ffffff;--overlay:rgba(31,35,40,.4);
 }
 
-html,body{height:100%;font-family:var(--font-mono);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+html{scroll-behavior:smooth}
+body{min-height:100vh;font-family:var(--font-mono);background:var(--bg);color:var(--text);font-size:14px;line-height:1.55;
+  background-image:radial-gradient(circle at 15% 0%,rgba(88,166,255,.07),transparent 45%),radial-gradient(circle at 85% 100%,rgba(188,140,255,.06),transparent 45%)}
 
-/* ── App layout ── */
-#app{display:flex;flex-direction:column;min-height:100vh;max-width:1200px;margin:0 auto;padding:0 16px}
+#app{display:flex;flex-direction:column;min-height:100vh;max-width:1280px;margin:0 auto;padding:0 20px}
 
 /* ── Top bar ── */
-.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
-.top-bar h1{font-size:20px;font-weight:600;color:var(--accent);letter-spacing:2px;flex:1;text-align:center}
-.top-bar h1 span{color:var(--muted);font-weight:400;font-size:13px}
-.top-bar-actions{display:flex;gap:6px;position:absolute;right:16px}
-.icon-btn{background:var(--surface);border:1px solid var(--border);border-radius:8px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:var(--text);transition:background .2s,border-color .2s}
-.icon-btn:hover{border-color:var(--accent);background:var(--accent);color:#fff}
+.top-bar{display:flex;align-items:center;gap:14px;padding:16px 0 12px}
+.brand{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.brand .logo{width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;font-size:22px;background:var(--accent-soft);border:1px solid var(--border);border-radius:10px}
+.brand h1{font-size:19px;font-weight:700;letter-spacing:1px;color:var(--text);white-space:nowrap}
+.brand h1 em{font-style:normal;color:var(--accent)}
+.brand .sub{font-size:11px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-bar-actions{display:flex;gap:8px;flex:none}
+.icon-btn{background:var(--surface);border:1px solid var(--border);border-radius:9px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;color:var(--text);transition:border-color .15s,background .15s,transform .1s}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent)}
+.icon-btn:active{transform:scale(.94)}
 
-/* ── Main content ── */
-.main-content{flex:1;display:flex;flex-direction:column;gap:16px;padding:8px 0}
+/* ── Pill (preset indicator) ── */
+.preset-pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:4px 12px;cursor:pointer;transition:border-color .15s,color .15s;white-space:nowrap}
+.preset-pill:hover{border-color:var(--accent);color:var(--text)}
+.preset-pill b{color:var(--accent);font-weight:700}
 
-/* ── Section title ── */
-.section-title{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+/* ── Main layout: two columns on desktop ── */
+.main-content{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;padding-bottom:8px;align-items:start}
+.col-main{display:flex;flex-direction:column;gap:14px;min-width:0}
+.col-side{display:flex;flex-direction:column;gap:14px;position:sticky;top:12px}
+@media(max-width:960px){
+  .main-content{grid-template-columns:1fr}
+  .col-side{position:static}
+}
 
-/* ── Collapsible categories ── */
-details.category{margin-bottom:4px}
-details.category>summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--accent);padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;list-style:none;display:flex;align-items:center;gap:8px;user-select:none;transition:background .2s}
+/* ── Panel ── */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 16px;border-bottom:1px solid var(--border-soft);font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.panel-head .badge{font-size:11px;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:2px 9px;text-transform:none;letter-spacing:0}
+.panel-body{padding:14px 16px}
+
+/* ── World state grid ── */
+#stateGrid{display:flex;flex-direction:column;gap:10px}
+details.category{border:1px solid var(--border-soft);border-radius:10px;background:var(--bg-soft);overflow:hidden}
+details.category>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;padding:10px 14px;font-size:13.5px;font-weight:600;color:var(--text);user-select:none;transition:background .15s}
 details.category>summary::-webkit-details-marker{display:none}
-details.category>summary::before{content:'▶';font-size:10px;transition:transform .2s;display:inline-block}
-details.category[open]>summary::before{transform:rotate(90deg)}
-details.category>summary:hover{background:var(--accent);color:#fff}
-details.category .grid{padding:10px 0 6px}
+details.category>summary:hover{background:var(--surface-2)}
+details.category>summary .chev{font-size:9px;color:var(--faint);transition:transform .2s}
+details.category[open]>summary .chev{transform:rotate(90deg)}
+details.category>summary .cat-name{color:var(--accent)}
+details.category>summary .cat-count{margin-left:auto;font-size:11px;color:var(--faint);font-weight:400}
+details.category .grid{padding:10px 12px 12px}
 
-/* ── Status Grid ── */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
-.card{background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;transition:transform .15s,box-shadow .3s,background .4s}
-.card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.15)}
-.card .key{font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
-.card .value{font-size:26px;font-weight:700;color:var(--text)}
-.card.flash-up{animation:flashUp .6s ease}
-.card.flash-down{animation:flashDown .6s ease}
-.card.flash-new{animation:flashNew .8s ease}
-@keyframes flashUp{0%{background:rgba(63,185,80,.35)}100%{background:var(--card-bg)}}
-@keyframes flashDown{0%{background:rgba(248,81,73,.35)}100%{background:var(--card-bg)}}
-@keyframes flashNew{0%{background:rgba(210,153,34,.5);transform:scale(1.05)}100%{background:var(--card-bg);transform:scale(1)}}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.card{position:relative;background:var(--card-bg);border:1px solid var(--border-soft);border-radius:10px;padding:13px 12px 11px;text-align:center;transition:border-color .15s,box-shadow .2s}
+.card:hover{border-color:var(--accent);box-shadow:0 3px 14px rgba(0,0,0,.18)}
+.card .key{font-size:11px;color:var(--muted);margin-bottom:4px;letter-spacing:.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .value{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.card .trend{position:absolute;top:7px;right:9px;font-size:10px;font-weight:700}
+.card .trend.up{color:var(--green)}
+.card .trend.down{color:var(--red)}
+.card.flash-up{animation:flashUp .7s ease}
+.card.flash-down{animation:flashDown .7s ease}
+.card.flash-new{animation:flashNew .9s ease}
+@keyframes flashUp{0%{background:rgba(63,185,80,.28);border-color:var(--green)}100%{background:var(--card-bg)}}
+@keyframes flashDown{0%{background:rgba(248,81,73,.28);border-color:var(--red)}100%{background:var(--card-bg)}}
+@keyframes flashNew{0%{background:rgba(210,153,34,.4);transform:scale(1.04)}100%{background:var(--card-bg);transform:scale(1)}}
+.empty-hint{padding:26px 10px;text-align:center;color:var(--faint);font-size:12.5px}
 
-/* ── Debug Log ── */
-.debug{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px}
-.debug pre{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:12px;max-height:200px;overflow-y:auto;font-size:12px;color:var(--green);white-space:pre-wrap;word-break:break-all}
+/* ── Warnings ── */
+.warnings{display:none;border:1px solid rgba(210,153,34,.45);background:rgba(210,153,34,.08);border-radius:10px;padding:10px 14px}
+.warnings.show{display:block}
+.warnings .warn-title{font-size:12px;font-weight:700;color:var(--yellow);margin-bottom:4px}
+.warnings li{font-size:12px;color:var(--muted);margin-left:16px;margin-bottom:2px}
 
-/* ── Controls ── */
-.controls{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.controls .countdown{font-size:13px;color:var(--muted);min-width:200px}
-.controls .countdown strong{color:var(--yellow);font-size:16px}
-.controls button{background:var(--accent);color:#fff;border:none;border-radius:4px;padding:7px 16px;font-family:var(--font-mono);font-size:13px;cursor:pointer;transition:opacity .2s}
-.controls button:hover{opacity:.85}
-.controls button.pause{background:var(--yellow);color:#1f2328}
-.controls button.danger{background:var(--red)}
-.controls input[type="text"]{flex:1;min-width:200px;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:6px 10px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none}
-.controls input[type="text"]:focus{border-color:var(--accent)}
+/* ── Oracle composer ── */
+.oracle-panel .panel-body{display:flex;flex-direction:column;gap:10px}
+.oracle-row{display:flex;gap:10px;align-items:stretch}
+.oracle-row textarea{flex:1;resize:none;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:var(--font-mono);font-size:13.5px;outline:none;min-height:46px;max-height:120px;line-height:1.5;transition:border-color .15s}
+.oracle-row textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.oracle-row textarea::placeholder{color:var(--faint)}
+.btn{border:none;border-radius:10px;padding:0 18px;font-family:var(--font-mono);font-size:13.5px;font-weight:600;cursor:pointer;transition:filter .15s,transform .1s,opacity .15s;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-primary{background:var(--accent);color:#fff;white-space:nowrap}
+.btn-primary:hover:not(:disabled){filter:brightness(1.12)}
 
-.status-bar{font-size:12px;color:var(--muted);text-align:center}
-.status-bar.error{color:var(--red)}
+/* ── Strength slider ── */
+.strength-row{display:flex;align-items:center;gap:12px}
+.strength-label{font-size:12px;color:var(--muted);flex:none;display:flex;align-items:center;gap:5px}
+.strength-slider{flex:1;-webkit-appearance:none;appearance:none;height:5px;border-radius:999px;background:linear-gradient(90deg,var(--green),var(--yellow) 55%,var(--red));outline:none;cursor:pointer}
+.strength-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:17px;height:17px;border-radius:50%;background:#fff;border:3px solid var(--accent);box-shadow:0 1px 5px rgba(0,0,0,.4);cursor:grab;transition:transform .1s}
+.strength-slider::-webkit-slider-thumb:active{cursor:grabbing;transform:scale(1.15)}
+.strength-slider::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:#fff;border:3px solid var(--accent);box-shadow:0 1px 5px rgba(0,0,0,.4);cursor:grab}
+.strength-val{flex:none;min-width:64px;text-align:right;font-size:12px;font-weight:700;color:var(--accent)}
 
-/* ── Modal overlay ── */
-.modal-overlay{position:fixed;inset:0;background:var(--overlay);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;pointer-events:none;transition:opacity .25s}
+/* ── Preset quick-switch (inline in side panel) ── */
+.quick-presets{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.qp-btn{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 10px;cursor:pointer;text-align:left;font-family:var(--font-mono);transition:border-color .15s,background .15s,transform .1s}
+.qp-btn:hover{border-color:var(--accent);transform:translateY(-1px)}
+.qp-btn.active{border-color:var(--accent);background:var(--accent-soft)}
+.qp-btn .qp-name{font-size:13px;font-weight:700;color:var(--text)}
+.qp-btn .qp-desc{font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.35}
+
+/* ── Meta info in side panel ── */
+.meta-list{display:flex;flex-direction:column;gap:8px;font-size:12.5px}
+.meta-list .meta-row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.meta-list .meta-k{color:var(--muted)}
+.meta-list .meta-v{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+.countdown-big{font-size:26px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;line-height:1}
+.controls-btns{display:flex;gap:8px;margin-top:4px}
+.controls-btns .btn{flex:1;padding:9px 0;font-size:12.5px}
+.btn-ghost{background:var(--surface-2);color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-ghost.danger{color:var(--red)}
+.btn-ghost.danger:hover{border-color:var(--red)}
+
+/* ── Log panel ── */
+.log-tabs{display:flex;gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:3px}
+.log-tabs button{flex:1;background:transparent;border:none;border-radius:6px;padding:5px 10px;font-family:var(--font-mono);font-size:11.5px;color:var(--muted);cursor:pointer;transition:background .15s,color .15s}
+.log-tabs button.active{background:var(--accent);color:#fff}
+.debug pre{background:var(--bg);border-top:1px solid var(--border-soft);padding:12px 14px;max-height:260px;overflow:auto;font-size:11.5px;color:var(--green);white-space:pre-wrap;word-break:break-all;line-height:1.5}
+
+/* ── Spinner & status ── */
+.spinner{display:none;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;flex:none}
+.spinner.show{display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.status-line{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;color:var(--muted);min-height:18px;padding:4px 0}
+.status-line.error{color:var(--red)}
+.status-line.ok{color:var(--green)}
+
+/* ── Modal ── */
+.modal-overlay{position:fixed;inset:0;background:var(--overlay);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(3px)}
 .modal-overlay.active{opacity:1;pointer-events:auto}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px 24px;width:92%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.4);transform:translateY(20px);transition:transform .25s}
-.modal-overlay.active .modal{transform:translateY(0)}
-.modal h2{font-size:18px;color:var(--accent);margin-bottom:18px;display:flex;align-items:center;gap:8px}
-.modal label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);margin-bottom:14px}
-.modal input[type="text"],.modal input[type="password"],.modal input[type="number"]{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:8px 12px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;width:100%;transition:border-color .2s}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px 22px;width:92%;max-width:460px;max-height:88vh;overflow-y:auto;box-shadow:0 16px 48px rgba(0,0,0,.5);transform:translateY(14px) scale(.98);transition:transform .2s}
+.modal-overlay.active .modal{transform:translateY(0) scale(1)}
+.modal h2{font-size:16px;color:var(--text);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.modal label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted);margin-bottom:15px}
+.modal input[type="text"],.modal input[type="password"],.modal input[type="number"]{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;width:100%;transition:border-color .15s}
 .modal input:focus{border-color:var(--accent)}
-.modal .range-row{display:flex;align-items:center;gap:10px}
-.modal input[type="range"]{flex:1;accent-color:var(--accent)}
-.modal .range-val{font-size:14px;font-weight:700;color:var(--text);min-width:32px;text-align:center}
-.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
-.modal-actions button{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:9px 22px;font-family:var(--font-mono);font-size:13px;cursor:pointer;transition:opacity .2s}
-.modal-actions button:hover{opacity:.85}
+.preset-group{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.preset-btn{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;text-align:left;font-family:var(--font-mono);transition:border-color .15s,background .15s}
+.preset-btn:hover{border-color:var(--accent)}
+.preset-btn.active{border-color:var(--accent);background:var(--accent-soft)}
+.preset-btn .preset-name{display:block;font-size:13px;font-weight:700;color:var(--text)}
+.preset-btn .preset-desc{display:block;font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:6px}
 
 /* ── Footer ── */
-footer{text-align:center;padding:18px 0 14px;font-size:12px;color:var(--footer-text);border-top:1px solid var(--border);margin-top:auto}
-footer a{color:var(--accent);text-decoration:none;transition:opacity .2s}
-footer a:hover{opacity:.7}
-footer .gh-icon{display:inline-block;vertical-align:middle;margin-right:4px}
+footer{text-align:center;padding:14px 0 16px;font-size:11.5px;color:var(--faint);border-top:1px solid var(--border-soft);margin-top:auto}
+footer a{color:var(--muted);text-decoration:none}
+footer a:hover{color:var(--accent)}
 
 /* ── Responsive ── */
-@media(max-width:768px){
-  .top-bar h1{font-size:16px}
-  .top-bar h1 span{display:block;font-size:11px}
-  .grid{grid-template-columns:1fr}
-  .card{padding:20px}
-  .card .value{font-size:30px}
-  .controls{flex-direction:column;align-items:stretch}
-  .controls .countdown{min-width:auto;text-align:center}
-  .controls input[type="text"]{min-width:auto}
-  .modal{width:96%;padding:22px 18px}
+@media(max-width:640px){
+  #app{padding:0 12px}
+  .brand h1{font-size:16px}
+  .brand .sub{display:none}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+  .card .value{font-size:19px}
+  .oracle-row{flex-direction:column}
+  .btn-primary{padding:10px 0}
+  .quick-presets{grid-template-columns:1fr 1fr}
+  .modal{width:95%;padding:20px 16px}
 }
 </style>
 </head>
 <body>
 <div id="app">
   <!-- Top bar -->
-  <div class="top-bar" style="position:relative">
-    <h1>🌍 上帝模拟器 <span>God Simulator</span></h1>
+  <header class="top-bar">
+    <div class="brand">
+      <div class="logo">🌍</div>
+      <div>
+        <h1>上帝模拟器 <em>God Simulator</em></h1>
+        <div class="sub">以神谕推动世界演变 · LLM 实时推演</div>
+      </div>
+    </div>
+    <button class="preset-pill" id="presetPill" title="当前创造力预设">🎨 <b id="presetPillName">均衡</b></button>
     <div class="top-bar-actions">
       <button class="icon-btn" id="btnTheme" title="切换主题">🌙</button>
       <button class="icon-btn" id="btnSettings" title="设置">⚙️</button>
     </div>
-  </div>
+  </header>
 
-  <!-- Main content -->
+  <!-- Main -->
   <div class="main-content">
-    <!-- State Grid (dynamic categories) -->
-    <div class="section-title">📊 世界状态监控</div>
-    <div id="stateGrid"></div>
+    <!-- Left column: world + oracle -->
+    <div class="col-main">
+      <!-- World state -->
+      <section class="panel">
+        <div class="panel-head">📊 世界状态 <span class="badge" id="stateBadge">0 类</span></div>
+        <div class="panel-body">
+          <div id="stateGrid"></div>
+        </div>
+      </section>
 
-    <!-- Debug Log -->
-    <div class="debug">
-      <div class="section-title">🖥 Raw JSON 监控日志</div>
-      <pre id="debugLog">等待第一次数据…</pre>
+      <!-- Warnings -->
+      <div class="warnings" id="warnBox">
+        <div class="warn-title">⚠️ LLM 输出已自动规范化</div>
+        <ul id="warnList"></ul>
+      </div>
+
+      <!-- Oracle composer -->
+      <section class="panel oracle-panel">
+        <div class="panel-head">⚡ 神谕</div>
+        <div class="panel-body">
+          <div class="oracle-row">
+            <textarea id="oracleInput" rows="1" placeholder="向世界宣告你的神谕…（Enter 发送，Shift+Enter 换行）"></textarea>
+            <button class="btn btn-primary" id="btnOracle">⚡ 发送</button>
+          </div>
+          <div class="strength-row">
+            <span class="strength-label">🪄 影响强度</span>
+            <input type="range" class="strength-slider" id="strengthSlider" min="0" max="100" step="5" value="50">
+            <span class="strength-val" id="strengthVal">50 · 普通</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="status-line" id="statusBar"><span class="spinner" id="spinner"></span><span id="statusText">就绪</span></div>
     </div>
 
-    <!-- Controls -->
-    <div class="controls">
-      <div class="countdown">距离下次刷新还剩 <strong id="cdDisplay">-</strong> 秒</div>
-      <button id="btnPause" class="pause">⏸ 暂停</button>
-      <input id="oracleInput" type="text" placeholder="输入你的神谕…">
-      <button id="btnOracle">⚡ 发送神谕</button>
-    </div>
+    <!-- Right column: controls + log -->
+    <aside class="col-side">
+      <!-- Control panel -->
+      <section class="panel">
+        <div class="panel-head">🕹 控制台</div>
+        <div class="panel-body">
+          <div class="meta-list">
+            <div class="meta-row"><span class="meta-k">下次自然演变</span><span class="countdown-big" id="cdDisplay">-</span></div>
+            <div class="meta-row"><span class="meta-k">创造力预设</span><span class="meta-v" id="metaPreset">均衡</span></div>
+            <div class="meta-row"><span class="meta-k">演变轮数</span><span class="meta-v" id="metaTicks">0</span></div>
+          </div>
+          <div class="controls-btns">
+            <button class="btn btn-ghost" id="btnPause">⏸ 暂停</button>
+            <button class="btn btn-ghost" id="btnEvolveNow">🔄 立即演变</button>
+          </div>
+        </div>
+      </section>
 
-    <div class="status-bar" id="statusBar">就绪</div>
+      <!-- Quick presets -->
+      <section class="panel">
+        <div class="panel-head">🎨 创造力预设</div>
+        <div class="panel-body">
+          <div class="quick-presets" id="quickPresets">
+            <button type="button" class="qp-btn" data-preset="realistic">
+              <span class="qp-name">📔 写实</span>
+              <span class="qp-desc">贴近现实 · 沉稳可信</span>
+            </button>
+            <button type="button" class="qp-btn active" data-preset="balanced">
+              <span class="qp-name">⚖️ 均衡</span>
+              <span class="qp-desc">现实与想象平衡</span>
+            </button>
+            <button type="button" class="qp-btn" data-preset="fantasy">
+              <span class="qp-name">🐉 奇幻</span>
+              <span class="qp-desc">魔法·龙族·脑洞</span>
+            </button>
+            <button type="button" class="qp-btn" data-preset="chaotic">
+              <span class="qp-name">🌋 疯狂</span>
+              <span class="qp-desc">天马行空·剧变</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Log -->
+      <section class="panel debug">
+        <div class="panel-head">🖥 运行日志
+          <div class="log-tabs">
+            <button id="tabCleaned" class="active" type="button">规范化</button>
+            <button id="tabRaw" type="button">原始输出</button>
+          </div>
+        </div>
+        <pre id="debugLog">等待第一次数据…</pre>
+      </section>
+    </aside>
   </div>
 
-  <!-- Footer -->
   <footer>
-    本项目采用 GPL-3.0 License 开源 &copy; 2026 HaveCake &nbsp;|&nbsp;
-    <a href="https://github.com/HaveCake/worldbox" target="_blank" rel="noopener noreferrer">
-      <svg class="gh-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-      GitHub
-    </a>
+    本项目采用 GPL-3.0 License 开源 © 2026 HaveCake ·
+    <a href="https://github.com/HaveCake/worldbox" target="_blank" rel="noopener noreferrer">GitHub</a>
   </footer>
 </div>
 
@@ -166,25 +310,39 @@ footer .gh-icon{display:inline-block;vertical-align:middle;margin-right:4px}
   <div class="modal">
     <h2>⚙️ 设置</h2>
     <label>API Base URL
-      <input id="cfgUrl" type="text" placeholder="https://api.openai.com（未填写则使用服务器默认配置，如已配置）">
+      <input id="cfgUrl" type="text" placeholder="https://api.openai.com（留空用服务器默认）">
     </label>
     <label>API Key
-      <input id="cfgKey" type="password" placeholder="sk-...（未填写则使用服务器默认配置，如已配置）">
+      <input id="cfgKey" type="password" placeholder="sk-...（留空用服务器默认）">
     </label>
     <label>Model
-      <input id="cfgModel" type="text" placeholder="gpt-4o（未填写则使用服务器默认配置，如已配置）">
+      <input id="cfgModel" type="text" placeholder="gpt-4o（留空用服务器默认）">
     </label>
-    <label>AI 创造力 (Temperature)
-      <div class="range-row">
-        <input id="cfgTemp" type="range" min="0" max="2" step="0.1" value="1.2">
-        <span class="range-val" id="tempDisplay">1.2</span>
+    <label>AI 创造力 — 预设
+      <div class="preset-group" id="presetGroup">
+        <button type="button" class="preset-btn" data-preset="realistic">
+          <span class="preset-name">📔 写实</span>
+          <span class="preset-desc">贴近现实，数值沉稳可信</span>
+        </button>
+        <button type="button" class="preset-btn active" data-preset="balanced">
+          <span class="preset-name">⚖️ 均衡</span>
+          <span class="preset-desc">现实与想象平衡，自然自洽</span>
+        </button>
+        <button type="button" class="preset-btn" data-preset="fantasy">
+          <span class="preset-name">🐉 奇幻</span>
+          <span class="preset-desc">魔法·龙族·脑洞大开</span>
+        </button>
+        <button type="button" class="preset-btn" data-preset="chaotic">
+          <span class="preset-name">🌋 疯狂</span>
+          <span class="preset-desc">天马行空，世界剧变</span>
+        </button>
       </div>
     </label>
     <label>Tick 间隔（秒）
       <input id="cfgTick" type="number" min="1" value="10">
     </label>
     <div class="modal-actions">
-      <button id="btnSaveSettings">💾 保存并关闭</button>
+      <button class="btn btn-primary" id="btnSaveSettings">💾 保存并关闭</button>
     </div>
   </div>
 </div>
@@ -198,19 +356,33 @@ footer .gh-icon{display:inline-block;vertical-align:middle;margin-right:4px}
   const cfgKey     = document.getElementById("cfgKey");
   const cfgModel   = document.getElementById("cfgModel");
   const cfgTick    = document.getElementById("cfgTick");
-  const cfgTemp    = document.getElementById("cfgTemp");
-  const tempDisplay= document.getElementById("tempDisplay");
+  const presetGroup= document.getElementById("presetGroup");
   const grid       = document.getElementById("stateGrid");
+  const stateBadge = document.getElementById("stateBadge");
   const debugLog   = document.getElementById("debugLog");
   const cdDisplay  = document.getElementById("cdDisplay");
+  const metaPreset = document.getElementById("metaPreset");
+  const metaTicks  = document.getElementById("metaTicks");
   const btnPause   = document.getElementById("btnPause");
+  const btnEvolveNow = document.getElementById("btnEvolveNow");
   const oracleIn   = document.getElementById("oracleInput");
   const btnOracle  = document.getElementById("btnOracle");
-  const statusBar  = document.getElementById("statusBar");
+  const strengthSlider = document.getElementById("strengthSlider");
+  const strengthVal= document.getElementById("strengthVal");
+  const statusBar  = document.getElementById("statusText");
+  const statusLine = document.getElementById("statusBar");
+  const spinner    = document.getElementById("spinner");
   const btnSettings= document.getElementById("btnSettings");
   const btnSave    = document.getElementById("btnSaveSettings");
   const modalOverlay= document.getElementById("modalOverlay");
   const btnTheme   = document.getElementById("btnTheme");
+  const warnBox    = document.getElementById("warnBox");
+  const warnList   = document.getElementById("warnList");
+  const tabCleaned = document.getElementById("tabCleaned");
+  const tabRaw     = document.getElementById("tabRaw");
+  const presetPill = document.getElementById("presetPill");
+  const presetPillName = document.getElementById("presetPillName");
+  const quickPresets = document.getElementById("quickPresets");
 
   /* ── State ── */
   const INITIAL_STATE = {
@@ -223,6 +395,52 @@ footer .gh-icon{display:inline-block;vertical-align:middle;margin-right:4px}
   let countdown = 0;
   let tickTimer = null;
   let requesting = false;
+  let creativity = "balanced";
+  let tickCount = 0;
+
+  const PRESETS = {
+    realistic: { label: "写实", temperature: 0.7 },
+    balanced:  { label: "均衡", temperature: 1.0 },
+    fantasy:   { label: "奇幻", temperature: 1.3 },
+    chaotic:   { label: "疯狂", temperature: 1.7 }
+  };
+
+  const STRENGTH_TIERS = [
+    { max: 25, label: "微弱" },
+    { max: 50, label: "普通" },
+    { max: 75, label: "强烈" },
+    { max: 100, label: "颠覆" }
+  ];
+
+  function setPreset(key) {
+    creativity = (PRESETS[key] ? key : "balanced");
+    const label = PRESETS[creativity].label;
+    document.querySelectorAll(".preset-btn").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.preset === creativity);
+    });
+    document.querySelectorAll(".qp-btn").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.preset === creativity);
+    });
+    presetPillName.textContent = label;
+    metaPreset.textContent = label;
+  }
+
+  document.querySelectorAll(".preset-btn, .qp-btn").forEach(btn => {
+    btn.addEventListener("click", () => setPreset(btn.dataset.preset));
+  });
+  presetPill.addEventListener("click", () => {
+    modalOverlay.classList.add("active");
+  });
+
+  /* ── Strength slider ── */
+  function strengthLabel(v) {
+    for (const t of STRENGTH_TIERS) if (v <= t.max) return t.label;
+    return "颠覆";
+  }
+  strengthSlider.addEventListener("input", () => {
+    const v = Number(strengthSlider.value);
+    strengthVal.textContent = v + " · " + strengthLabel(v);
+  });
 
   /* ── Theme ── */
   function applyTheme(theme) {
@@ -230,16 +448,11 @@ footer .gh-icon{display:inline-block;vertical-align:middle;margin-right:4px}
     btnTheme.textContent = theme === "dark" ? "🌙" : "☀️";
     localStorage.setItem("worldbox_theme", theme);
   }
-
   btnTheme.addEventListener("click", () => {
     const cur = document.documentElement.getAttribute("data-theme") || "dark";
     applyTheme(cur === "dark" ? "light" : "dark");
   });
-
-  (function initTheme() {
-    const saved = localStorage.getItem("worldbox_theme");
-    applyTheme(saved || "dark");
-  })();
+  applyTheme(localStorage.getItem("worldbox_theme") || "dark");
 
   /* ── Settings modal ── */
   btnSettings.addEventListener("click", () => modalOverlay.classList.add("active"));
@@ -254,18 +467,15 @@ footer .gh-icon{display:inline-block;vertical-align:middle;margin-right:4px}
     }
   });
 
-  cfgTemp.addEventListener("input", () => {
-    tempDisplay.textContent = cfgTemp.value;
-  });
-
-  /* ── localStorage helpers ── */
+  /* ── localStorage ── */
   function saveConfig() {
     const cfg = {
       apiUrl: cfgUrl.value,
       apiKey: cfgKey.value,
       model: cfgModel.value,
       tick: cfgTick.value,
-      temperature: cfgTemp.value
+      creativity: creativity,
+      strength: Number(strengthSlider.value)
     };
     localStorage.setItem("worldbox_cfg", JSON.stringify(cfg));
   }
@@ -278,111 +488,196 @@ footer .gh-icon{display:inline-block;vertical-align:middle;margin-right:4px}
         cfgKey.value   = cfg.apiKey  || "";
         cfgModel.value = cfg.model   || "";
         cfgTick.value  = cfg.tick    || 10;
-        cfgTemp.value  = cfg.temperature !== undefined ? cfg.temperature : 1.2;
-        tempDisplay.textContent = cfgTemp.value;
+        if (cfg.creativity && PRESETS[cfg.creativity]) {
+          setPreset(cfg.creativity);
+        } else if (cfg.temperature !== undefined) {
+          const t = Number(cfg.temperature);
+          let best = "balanced", diff = Infinity;
+          for (const [k, p] of Object.entries(PRESETS)) {
+            const d = Math.abs(p.temperature - t);
+            if (d < diff) { diff = d; best = k; }
+          }
+          setPreset(best);
+        } else {
+          setPreset("balanced");
+        }
+        if (cfg.strength !== undefined) {
+          strengthSlider.value = Math.max(0, Math.min(100, Number(cfg.strength) || 50));
+        }
+      } else {
+        setPreset("balanced");
       }
     } catch (e) { console.warn("loadConfig:", e); }
+    // Refresh derived UI
+    strengthVal.textContent = strengthSlider.value + " · " + strengthLabel(Number(strengthSlider.value));
   }
 
-  /* ── Render grid (nested / flat compatible) ── */
+  /* ── Defensive coercion (mirrors server) ── */
+  function coerceNumber(value) {
+    if (typeof value === "number") return Number.isFinite(value) ? value : undefined;
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      if (trimmed === "") return undefined;
+      const n = Number(trimmed.replace(/,/g, "").replace(/[ \t]/g, ""));
+      return Number.isFinite(n) ? n : undefined;
+    }
+    if (typeof value === "boolean") return value ? 1 : 0;
+    return undefined;
+  }
+  function safeNumber(value, prevValue) {
+    const n = coerceNumber(value);
+    if (n !== undefined) return Math.round(Math.max(0, Math.min(1000000, n)));
+    const p = coerceNumber(prevValue);
+    if (p !== undefined) return Math.round(Math.max(0, Math.min(1000000, p)));
+    return 0;
+  }
   function isNestedState(state) {
     return Object.values(state).some(v => typeof v === "object" && v !== null && !Array.isArray(v));
+  }
+  function sanitizeState(state, prevState) {
+    if (!state || typeof state !== "object" || Array.isArray(state)) {
+      return prevState && !Array.isArray(prevState) ? sanitizeState(prevState, null) : { "世界状态": { "稳定性": 100 } };
+    }
+    const prev = prevState && typeof prevState === "object" && !Array.isArray(prevState) ? prevState : {};
+    const out = {};
+    if (isNestedState(state)) {
+      for (const [cat, val] of Object.entries(state)) {
+        if (val && typeof val === "object" && !Array.isArray(val)) {
+          const prevCat = prev[cat] && typeof prev[cat] === "object" ? prev[cat] : {};
+          const catObj = {};
+          for (const [attr, attrVal] of Object.entries(val)) {
+            catObj[attr] = safeNumber(attrVal, prevCat[attr]);
+          }
+          out[cat] = catObj;
+        } else {
+          out[cat] = safeNumber(val, prev[cat]);
+        }
+      }
+      return out;
+    }
+    for (const [attr, val] of Object.entries(state)) out[attr] = safeNumber(val, prev[attr]);
+    return { "世界状态": out };
+  }
+
+  /* ── Render ── */
+  function escapeHtml(s) {
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
   }
 
   function renderState() {
     grid.innerHTML = "";
-    if (isNestedState(currentState)) {
-      renderNestedState();
-    } else {
-      renderFlatState();
+    const cats = Object.keys(currentState);
+    stateBadge.textContent = cats.length + " 类";
+    if (!cats.length) {
+      grid.innerHTML = '<div class="empty-hint">世界尚在虚无中…发送一条神谕或等待下一次演变。</div>';
+      return;
     }
-  }
-
-  function renderNestedState() {
-    const categories = Object.keys(currentState);
-    categories.forEach(cat => {
-      const val = currentState[cat];
-      if (typeof val === "object" && val !== null && !Array.isArray(val)) {
-        const details = document.createElement("details");
-        details.className = "category";
-        details.open = true;
-        const summary = document.createElement("summary");
-        summary.textContent = cat;
-        details.appendChild(summary);
-
-        const subGrid = document.createElement("div");
-        subGrid.className = "grid";
-        const prevCat = (previousState && typeof previousState[cat] === "object") ? previousState[cat] : {};
-
-        Object.keys(val).forEach(key => {
-          const card = createCard(key, val[key], prevCat[key]);
-          subGrid.appendChild(card);
-        });
-
-        details.appendChild(subGrid);
-        grid.appendChild(details);
-      } else {
-        const card = createCard(cat, val, previousState ? previousState[cat] : undefined);
-        grid.appendChild(card);
-      }
-    });
-  }
-
-  function renderFlatState() {
-    const wrap = document.createElement("div");
-    wrap.className = "grid";
-    Object.keys(currentState).forEach(key => {
-      const card = createCard(key, currentState[key], previousState ? previousState[key] : undefined);
-      wrap.appendChild(card);
-    });
-    grid.appendChild(wrap);
+    if (isNestedState(currentState)) {
+      cats.forEach(cat => {
+        const val = currentState[cat];
+        if (val && typeof val === "object" && !Array.isArray(val)) {
+          const details = document.createElement("details");
+          details.className = "category";
+          details.open = true;
+          const summary = document.createElement("summary");
+          summary.innerHTML = '<span class="chev">▶</span><span class="cat-name">' + escapeHtml(cat) + '</span>';
+          const count = document.createElement("span");
+          count.className = "cat-count";
+          count.textContent = Object.keys(val).length + " 项";
+          summary.appendChild(count);
+          details.appendChild(summary);
+          const subGrid = document.createElement("div");
+          subGrid.className = "grid";
+          const prevCat = (previousState && typeof previousState[cat] === "object") ? previousState[cat] : {};
+          Object.keys(val).forEach(key => subGrid.appendChild(createCard(key, val[key], prevCat[key])));
+          details.appendChild(subGrid);
+          grid.appendChild(details);
+        } else {
+          grid.appendChild(createCard(cat, val, previousState[cat]));
+        }
+      });
+    } else {
+      const wrap = document.createElement("div");
+      wrap.className = "grid";
+      cats.forEach(key => wrap.appendChild(createCard(key, currentState[key], previousState[key])));
+      grid.appendChild(wrap);
+    }
   }
 
   function createCard(key, val, oldVal) {
     const card = document.createElement("div");
     card.className = "card";
+    let trendHtml = "";
     if (oldVal === undefined) {
       card.classList.add("flash-new");
     } else if (typeof val === "number" && typeof oldVal === "number") {
-      if (val > oldVal) card.classList.add("flash-up");
-      else if (val < oldVal) card.classList.add("flash-down");
+      if (val > oldVal) { card.classList.add("flash-up"); const d = val - oldVal; trendHtml = '<span class="trend up">▲' + d + '</span>'; }
+      else if (val < oldVal) { card.classList.add("flash-down"); const d = val - oldVal; trendHtml = '<span class="trend down">▼' + Math.abs(d) + '</span>'; }
     }
-    card.innerHTML =
-      '<div class="key">' + escapeHtml(String(key)) + '</div>' +
+    card.innerHTML = trendHtml +
+      '<div class="key">' + escapeHtml(key) + '</div>' +
       '<div class="value">' + escapeHtml(String(val)) + '</div>';
     return card;
   }
 
-  function escapeHtml(s) {
-    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  /* ── Log ── */
+  let logMode = "cleaned";
+  let lastLog = { cleaned: null, raw: null };
+  function setLogMode(mode) {
+    logMode = mode;
+    tabCleaned.className = mode === "cleaned" ? "active" : "";
+    tabRaw.className = mode === "raw" ? "active" : "";
+    refreshDebug();
+  }
+  function refreshDebug() {
+    const v = lastLog[logMode];
+    debugLog.textContent = (v === null || v === undefined)
+      ? "等待第一次数据…"
+      : "[" + new Date().toLocaleTimeString() + "]\n" + JSON.stringify(v, null, 2);
+  }
+  function appendDebugLog(cleaned, raw) {
+    lastLog = { cleaned: cleaned, raw: (raw !== undefined ? raw : cleaned) };
+    refreshDebug();
+  }
+  tabCleaned.addEventListener("click", () => setLogMode("cleaned"));
+  tabRaw.addEventListener("click", () => setLogMode("raw"));
+
+  /* ── Warnings ── */
+  function showWarnings(warnings) {
+    warnList.innerHTML = "";
+    if (Array.isArray(warnings) && warnings.length) {
+      warnings.forEach(w => {
+        const li = document.createElement("li");
+        li.textContent = w;
+        warnList.appendChild(li);
+      });
+      warnBox.classList.add("show");
+    } else {
+      warnBox.classList.remove("show");
+    }
   }
 
-  /* ── Debug log ── */
-  function appendDebugLog(json) {
-    const ts = new Date().toLocaleTimeString();
-    const entry = "[" + ts + "]\n" + JSON.stringify(json, null, 2) + "\n\n";
-    debugLog.textContent = entry + debugLog.textContent;
+  /* ── Status ── */
+  function setStatus(msg, kind) {
+    statusBar.textContent = msg;
+    statusLine.className = "status-line" + (kind ? " " + kind : "");
+  }
+  function setLoading(loading, msg) {
+    spinner.classList.toggle("show", loading);
+    btnOracle.disabled = loading;
+    btnEvolveNow.disabled = loading;
+    if (loading) setStatus(msg || "🔄 正在推演世界…");
   }
 
-  /* ── Defensive JSON extraction ── */
-  function extractJSON(text) {
-    try { return JSON.parse(text); } catch (_) { /* fall through */ }
-    const fenced = /```json([\s\S]*?)```/.exec(text);
-    if (fenced) return JSON.parse(fenced[1].trim());
-    const braces = /\{[\s\S]*\}/.exec(text);
-    if (braces) return JSON.parse(braces[0]);
-    throw new Error("Cannot extract JSON");
-  }
-
-  /* ── API call (slice-only: system + current state + new concepts) ── */
+  /* ── API ── */
   async function callEvolve(userPrompt) {
     const apiUrl = cfgUrl.value.trim();
     const apiKey = cfgKey.value.trim();
     const model  = cfgModel.value.trim();
-    const temperature = parseFloat(cfgTemp.value);
+    const strength = Number(strengthSlider.value);
 
     requesting = true;
-    setStatus("🔄 正在请求 LLM…");
+    setLoading(true, "🔄 正在推演世界…");
 
     const backendUrl = (location.origin.includes("file://") ? "http://localhost:3000" : location.origin) + "/evolve";
 
@@ -394,7 +689,8 @@ footer .gh-icon{display:inline-block;vertical-align:middle;margin-right:4px}
           apiUrl,
           apiKey,
           model,
-          temperature,
+          creativity,
+          oracle_strength: strength,
           current_state: currentState,
           user_prompt: userPrompt || ""
         })
@@ -403,88 +699,111 @@ footer .gh-icon{display:inline-block;vertical-align:middle;margin-right:4px}
       let data;
       const raw = await resp.text();
       try {
-        data = extractJSON(raw);
+        data = JSON.parse(raw);
       } catch {
-        appendDebugLog({ raw_response: raw });
-        setStatus("❌ 响应解析失败", true);
+        setLogMode("raw");
+        appendDebugLog(null, { raw_response: raw });
+        setStatus("❌ 响应解析失败：后端返回了非 JSON 内容", "error");
         return false;
       }
-
-      appendDebugLog(data);
 
       if (!resp.ok) {
-        setStatus("❌ 后端错误: " + (data.error || resp.statusText), true);
+        const errMsg = (data && data.error) || ("HTTP " + resp.status);
+        appendDebugLog(null, { http_status: resp.status, body: data });
+        setStatus("❌ 后端错误: " + errMsg, "error");
         return false;
       }
 
+      let cleanedState = data;
+      let rawState = null;
+      let warnings = [];
+      if (data && typeof data === "object" && "state" in data) {
+        cleanedState = data.state;
+        rawState = (data.raw !== undefined) ? data.raw : null;
+        warnings = data.warnings || [];
+      }
+
+      const sanitized = sanitizeState(cleanedState, currentState);
+      appendDebugLog(sanitized, rawState);
+      showWarnings(warnings);
+
       previousState = JSON.parse(JSON.stringify(currentState));
-      currentState = data;
+      currentState = sanitized;
+      tickCount++;
+      metaTicks.textContent = tickCount;
       renderState();
-      setStatus("✅ 世界已演变 — " + new Date().toLocaleTimeString());
+      setStatus(userPrompt ? "⚡ 神谕已生效 — " + new Date().toLocaleTimeString() : "✅ 世界已演变 — " + new Date().toLocaleTimeString(), "ok");
       return true;
     } catch (err) {
-      appendDebugLog({ error: err.message });
-      setStatus("❌ 网络错误: " + err.message, true);
+      appendDebugLog(null, { error: err.message });
+      setStatus("❌ 网络错误: " + err.message, "error");
       return false;
     } finally {
       requesting = false;
+      setLoading(false);
     }
   }
 
-  /* ── Status bar ── */
-  function setStatus(msg, isError) {
-    statusBar.textContent = msg;
-    statusBar.className = "status-bar" + (isError ? " error" : "");
-  }
-
-  /* ── Timer / countdown ── */
+  /* ── Timer ── */
   function getTickSeconds() {
     const v = parseInt(cfgTick.value, 10);
     return (v && v > 0) ? v : 10;
   }
-
   function startCountdown() {
     stopCountdown();
     countdown = getTickSeconds();
-    cdDisplay.textContent = countdown;
+    cdDisplay.textContent = countdown + "s";
     tickTimer = setInterval(() => {
       if (paused || requesting) return;
       countdown--;
-      cdDisplay.textContent = Math.max(countdown, 0);
+      cdDisplay.textContent = Math.max(countdown, 0) + "s";
       if (countdown <= 0) {
         stopCountdown();
         callEvolve("").then(() => startCountdown());
       }
     }, 1000);
   }
-
   function stopCountdown() {
     if (tickTimer) { clearInterval(tickTimer); tickTimer = null; }
   }
 
-  /* ── Pause / resume ── */
+  /* ── Pause / evolve-now ── */
   btnPause.addEventListener("click", () => {
     paused = !paused;
     btnPause.textContent = paused ? "▶ 继续" : "⏸ 暂停";
-    btnPause.className = paused ? "pause danger" : "pause";
+    btnPause.classList.toggle("danger", paused);
+  });
+  btnEvolveNow.addEventListener("click", async () => {
+    if (requesting) return;
+    stopCountdown();
+    await callEvolve("");
+    startCountdown();
   });
 
-  /* ── Send oracle ── */
+  /* ── Oracle send ── */
   btnOracle.addEventListener("click", async () => {
     const text = oracleIn.value.trim();
-    if (!text) return;
+    if (!text || requesting) return;
     oracleIn.value = "";
+    oracleIn.style.height = "auto";
     stopCountdown();
     await callEvolve(text);
     startCountdown();
   });
-
   oracleIn.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") btnOracle.click();
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      btnOracle.click();
+    }
+  });
+  oracleIn.addEventListener("input", () => {
+    oracleIn.style.height = "auto";
+    oracleIn.style.height = Math.min(oracleIn.scrollHeight, 120) + "px";
   });
 
   /* ── Init ── */
   loadConfig();
+  setLogMode("cleaned");
   previousState = {};
   renderState();
   startCountdown();
